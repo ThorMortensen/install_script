@@ -5,8 +5,19 @@
  */
 package gui;
 
+import java.awt.CardLayout;
+import java.awt.Component;
 import java.awt.GridLayout;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import javax.swing.JCheckBox;
+import javax.swing.JList;
+import javax.swing.JScrollPane;
+import javax.swing.ListCellRenderer;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 /**
  *
@@ -20,19 +31,90 @@ public class mianFrame extends javax.swing.JFrame {
           + "environment so it’s ready to use. Enjoy 😃</center></html>";
 
   String username = System.getProperty("user.name");
+  String password;
+  java.awt.CardLayout cl;
+  JList<CheckboxListItem> componentList;
+
+  class WelcomeDocumentListener implements DocumentListener {
+
+    public void changedUpdate(DocumentEvent e) {
+      changed();
+    }
+
+    public void removeUpdate(DocumentEvent e) {
+      changed();
+    }
+
+    public void insertUpdate(DocumentEvent e) {
+      changed();
+    }
+
+    public void changed() {
+      if (welcomeNameTexField.getText().isEmpty() || String.valueOf(welcomePasswordField.getPassword()).isEmpty()) {
+        welcomeButton.setEnabled(false);
+      } else {
+        welcomeButton.setEnabled(true);
+        username = welcomeNameTexField.getText();
+        password = String.valueOf(welcomePasswordField.getPassword());
+        System.out.println(username + " " + password);
+      }
+
+    }
+  };
 
   /**
    * Creates new form mianFrame
    */
   public mianFrame() {
     initComponents();
-//    jPanel1.setLayout(new GridLayout());
     welcomeTextLabel.setText(welcomeText);
     welcomeDiscriotnLabel.setText(welcomeDiscrption);
     welcomeDiscriotnLabel.setHorizontalTextPosition(SwingConstants.CENTER);
     welcomeNameTexField.setText(username);
-//    welcomeTextLabel.setVerticalAlignment(SwingConstants.LEFT); //added
-//    welcomeTextLabel.setHorizontalAlignment(welcomeTextLabel.CENTER);
+    welcomeNameTexField.getDocument().addDocumentListener(new WelcomeDocumentListener());
+    welcomePasswordField.getDocument().addDocumentListener(new WelcomeDocumentListener());
+    componentList = getCheckboxScriptList();
+    jScrollPane1.setViewportView(componentList);
+    cl = (java.awt.CardLayout) jPanelCard.getLayout();
+    cl.next(jPanelCard);
+//    cl.next(jPanelInstallSelect);
+//        cl.next(bottomPanel);
+//    jPanelCard;
+  }
+
+  JList getCheckboxScriptList() {
+    // Create a list containing CheckboxListItem's
+    JList<CheckboxListItem> list = new JList<CheckboxListItem>(
+            new CheckboxListItem[]{new CheckboxListItem("apple"),
+              new CheckboxListItem("orange"),
+              new CheckboxListItem("mango"),
+              new CheckboxListItem("paw paw"),
+              new CheckboxListItem("banana")});
+
+    // Use a CheckboxListRenderer (see below)
+    // to renderer list cells
+    list.setCellRenderer(new CheckboxListRenderer());
+    list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+    // Add a mouse listener to handle changing selection
+    list.addMouseListener(new MouseAdapter() {
+      public void mouseClicked(MouseEvent event) {
+        JList<CheckboxListItem> list
+                = (JList<CheckboxListItem>) event.getSource();
+
+        // Get index of item clicked
+        int index = list.locationToIndex(event.getPoint());
+        CheckboxListItem item = (CheckboxListItem) list.getModel()
+                .getElementAt(index);
+
+        // Toggle selected state
+        item.setSelected(!item.isSelected());
+
+        // Repaint cell
+        list.repaint(list.getCellBounds(index, index));
+      }
+    });
+    return list;
   }
 
   /**
@@ -45,6 +127,14 @@ public class mianFrame extends javax.swing.JFrame {
   private void initComponents() {
 
     logoLabel = new javax.swing.JLabel();
+    jPanelCard = new javax.swing.JPanel();
+    jPanelInstallSelect = new javax.swing.JPanel();
+    jScrollPane1 = new javax.swing.JScrollPane();
+    jList1 = new javax.swing.JList<>();
+    jLabel3 = new javax.swing.JLabel();
+    jButtonSelectAll = new javax.swing.JButton();
+    jButtonClearAll = new javax.swing.JButton();
+    jButtonDoIt = new javax.swing.JButton();
     welcomePanel = new javax.swing.JPanel();
     welcomeTextLabel = new javax.swing.JLabel();
     welcomeDiscriotnLabel = new javax.swing.JLabel();
@@ -60,6 +150,70 @@ public class mianFrame extends javax.swing.JFrame {
     setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
     logoLabel.setIcon(new javax.swing.ImageIcon("/home/thor/install_script/resources/company/logo.png")); // NOI18N
+
+    jPanelCard.setLayout(new java.awt.CardLayout());
+
+    jScrollPane1.setViewportView(jList1);
+
+    jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+    jLabel3.setText("Select components to install");
+
+    jButtonSelectAll.setText("Select All");
+    jButtonSelectAll.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        jButtonSelectAllActionPerformed(evt);
+      }
+    });
+
+    jButtonClearAll.setText("Clear All");
+    jButtonClearAll.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        jButtonClearAllActionPerformed(evt);
+      }
+    });
+
+    jButtonDoIt.setText("DO IT!");
+    jButtonDoIt.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        jButtonDoItActionPerformed(evt);
+      }
+    });
+
+    javax.swing.GroupLayout jPanelInstallSelectLayout = new javax.swing.GroupLayout(jPanelInstallSelect);
+    jPanelInstallSelect.setLayout(jPanelInstallSelectLayout);
+    jPanelInstallSelectLayout.setHorizontalGroup(
+      jPanelInstallSelectLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+      .addGroup(jPanelInstallSelectLayout.createSequentialGroup()
+        .addContainerGap()
+        .addGroup(jPanelInstallSelectLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+          .addGroup(jPanelInstallSelectLayout.createSequentialGroup()
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 269, Short.MAX_VALUE)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addGroup(jPanelInstallSelectLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+              .addComponent(jButtonClearAll, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+              .addComponent(jButtonSelectAll, javax.swing.GroupLayout.DEFAULT_SIZE, 108, Short.MAX_VALUE)
+              .addComponent(jButtonDoIt, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+          .addComponent(jLabel3))
+        .addContainerGap())
+    );
+    jPanelInstallSelectLayout.setVerticalGroup(
+      jPanelInstallSelectLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+      .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanelInstallSelectLayout.createSequentialGroup()
+        .addContainerGap()
+        .addComponent(jLabel3)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addGroup(jPanelInstallSelectLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+          .addGroup(jPanelInstallSelectLayout.createSequentialGroup()
+            .addComponent(jButtonSelectAll)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addComponent(jButtonClearAll)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jButtonDoIt, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE))
+          .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 212, Short.MAX_VALUE))
+        .addContainerGap())
+    );
+
+    jPanelCard.add(jPanelInstallSelect, "card3");
 
     welcomePanel.setLayout(new java.awt.GridLayout(5, 3));
 
@@ -92,7 +246,7 @@ public class mianFrame extends javax.swing.JFrame {
     jPanel1Layout.setVerticalGroup(
       jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
       .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-        .addContainerGap(19, Short.MAX_VALUE)
+        .addContainerGap(20, Short.MAX_VALUE)
         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
           .addComponent(welcomeNameTexField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
           .addComponent(jLabel1))
@@ -102,11 +256,6 @@ public class mianFrame extends javax.swing.JFrame {
     welcomePanel.add(jPanel1);
 
     welcomePasswordField.setToolTipText("Type your Linux user password");
-    welcomePasswordField.addKeyListener(new java.awt.event.KeyAdapter() {
-      public void keyPressed(java.awt.event.KeyEvent evt) {
-        welcomePasswordFieldKeyPressed(evt);
-      }
-    });
 
     jLabel2.setText("Linux password");
 
@@ -128,7 +277,7 @@ public class mianFrame extends javax.swing.JFrame {
         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
           .addComponent(welcomePasswordField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
           .addComponent(jLabel2))
-        .addContainerGap(21, Short.MAX_VALUE))
+        .addContainerGap(22, Short.MAX_VALUE))
     );
 
     welcomePanel.add(jPanel2);
@@ -154,11 +303,13 @@ public class mianFrame extends javax.swing.JFrame {
       jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
       .addGroup(jPanel3Layout.createSequentialGroup()
         .addContainerGap()
-        .addComponent(welcomeButton, javax.swing.GroupLayout.DEFAULT_SIZE, 36, Short.MAX_VALUE)
+        .addComponent(welcomeButton, javax.swing.GroupLayout.DEFAULT_SIZE, 37, Short.MAX_VALUE)
         .addContainerGap())
     );
 
     welcomePanel.add(jPanel3);
+
+    jPanelCard.add(welcomePanel, "card2");
 
     javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
     getContentPane().setLayout(layout);
@@ -166,39 +317,55 @@ public class mianFrame extends javax.swing.JFrame {
       layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
       .addGroup(layout.createSequentialGroup()
         .addContainerGap()
-        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-          .addComponent(welcomePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-          .addGroup(layout.createSequentialGroup()
-            .addComponent(logoLabel)
-            .addGap(0, 0, Short.MAX_VALUE)))
-        .addContainerGap())
+        .addComponent(logoLabel)
+        .addContainerGap(175, Short.MAX_VALUE))
+      .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGroup(layout.createSequentialGroup()
+          .addContainerGap()
+          .addComponent(jPanelCard, javax.swing.GroupLayout.DEFAULT_SIZE, 395, Short.MAX_VALUE)
+          .addContainerGap()))
     );
     layout.setVerticalGroup(
       layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
       .addGroup(layout.createSequentialGroup()
         .addContainerGap()
         .addComponent(logoLabel)
-        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-        .addComponent(welcomePanel, javax.swing.GroupLayout.DEFAULT_SIZE, 241, Short.MAX_VALUE)
-        .addContainerGap())
+        .addContainerGap(253, Short.MAX_VALUE))
+      .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+          .addGap(56, 56, 56)
+          .addComponent(jPanelCard, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+          .addContainerGap()))
     );
 
     setBounds(0, 0, 417, 337);
   }// </editor-fold>//GEN-END:initComponents
 
 
-  private void welcomePasswordFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_welcomePasswordFieldKeyPressed
-    if (!welcomeNameTexField.getText().isEmpty() || welcomePasswordField.getPassword().length > 0) {
-      welcomeButton.setEnabled(true);
-    } else {
-      welcomeButton.setEnabled(false);
-
-    }
-  }//GEN-LAST:event_welcomePasswordFieldKeyPressed
-
   private void welcomeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_welcomeButtonActionPerformed
-    welcomePanel.setVisible(false);
+    cl.next(jPanelCard);
   }//GEN-LAST:event_welcomeButtonActionPerformed
+
+  private void jButtonClearAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonClearAllActionPerformed
+    for (int i = 0; i < componentList.getModel().getSize(); i++) {
+      componentList.getModel().getElementAt(i).setSelected(false);
+      componentList.repaint(componentList.getCellBounds(i, i));
+    }
+  }//GEN-LAST:event_jButtonClearAllActionPerformed
+
+  private void jButtonSelectAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSelectAllActionPerformed
+    for (int i = 0; i < componentList.getModel().getSize(); i++) {
+      componentList.getModel().getElementAt(i).setSelected(true);
+      componentList.repaint(componentList.getCellBounds(i, i));
+    }
+  }//GEN-LAST:event_jButtonSelectAllActionPerformed
+
+  private void jButtonDoItActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonDoItActionPerformed
+    for (int i = 0; i < componentList.getModel().getSize(); i++) {
+      System.out.println(componentList.getModel().getElementAt(i).toString() + " "
+              + componentList.getModel().getElementAt(i).isSelected);
+    }
+  }//GEN-LAST:event_jButtonDoItActionPerformed
 
   /**
    * @param args the command line arguments
@@ -236,11 +403,19 @@ public class mianFrame extends javax.swing.JFrame {
   }
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
+  private javax.swing.JButton jButtonClearAll;
+  private javax.swing.JButton jButtonDoIt;
+  private javax.swing.JButton jButtonSelectAll;
   private javax.swing.JLabel jLabel1;
   private javax.swing.JLabel jLabel2;
+  private javax.swing.JLabel jLabel3;
+  private javax.swing.JList<CheckboxListItem> jList1;
   private javax.swing.JPanel jPanel1;
   private javax.swing.JPanel jPanel2;
   private javax.swing.JPanel jPanel3;
+  private javax.swing.JPanel jPanelCard;
+  private javax.swing.JPanel jPanelInstallSelect;
+  private javax.swing.JScrollPane jScrollPane1;
   private javax.swing.JLabel logoLabel;
   private javax.swing.JButton welcomeButton;
   private javax.swing.JLabel welcomeDiscriotnLabel;
@@ -249,4 +424,46 @@ public class mianFrame extends javax.swing.JFrame {
   private javax.swing.JPasswordField welcomePasswordField;
   private javax.swing.JLabel welcomeTextLabel;
   // End of variables declaration//GEN-END:variables
+
+// Represents items in the list that can be selected
+  class CheckboxListItem {
+
+    private String label;
+    private boolean isSelected = false;
+
+    public CheckboxListItem(String label) {
+      this.label = label;
+      setSelected(true);
+    }
+
+    public boolean isSelected() {
+      return isSelected;
+    }
+
+    public void setSelected(boolean isSelected) {
+      this.isSelected = isSelected;
+    }
+
+    public String toString() {
+      return label;
+    }
+  }
+
+// Handles rendering cells in the list using a check box
+  class CheckboxListRenderer extends JCheckBox implements
+          ListCellRenderer<CheckboxListItem> {
+
+    public Component getListCellRendererComponent(
+            JList<? extends CheckboxListItem> list, CheckboxListItem value,
+            int index, boolean isSelected, boolean cellHasFocus) {
+      setEnabled(list.isEnabled());
+      setSelected(value.isSelected());
+      setFont(list.getFont());
+      setBackground(list.getBackground());
+      setForeground(list.getForeground());
+      setText(value.toString());
+      return this;
+    }
+  }
+
 }
