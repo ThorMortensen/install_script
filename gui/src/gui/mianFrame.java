@@ -10,6 +10,14 @@ import java.awt.Component;
 import java.awt.GridLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.swing.JCheckBox;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
@@ -32,6 +40,7 @@ public class mianFrame extends javax.swing.JFrame {
 
   String username = System.getProperty("user.name");
   String password;
+  String companyName;
   java.awt.CardLayout cl;
   JList<CheckboxListItem> componentList;
 
@@ -67,7 +76,7 @@ public class mianFrame extends javax.swing.JFrame {
    */
   public mianFrame() {
     initComponents();
-    welcomeTextLabel.setText(welcomeText);
+    welcomeTextLabel.setText("Welcome to " + companyName + " the linux installer");
     welcomeDiscriotnLabel.setText(welcomeDiscrption);
     welcomeDiscriotnLabel.setHorizontalTextPosition(SwingConstants.CENTER);
     welcomeNameTexField.setText(username);
@@ -187,7 +196,7 @@ public class mianFrame extends javax.swing.JFrame {
         .addContainerGap()
         .addGroup(jPanelInstallSelectLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
           .addGroup(jPanelInstallSelectLayout.createSequentialGroup()
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 269, Short.MAX_VALUE)
+            .addComponent(jScrollPane1)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
             .addGroup(jPanelInstallSelectLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
               .addComponent(jButtonClearAll, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -393,6 +402,18 @@ public class mianFrame extends javax.swing.JFrame {
       java.util.logging.Logger.getLogger(mianFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
     }
     //</editor-fold>
+    
+    List<Path> logoList = null;
+    
+    try {
+      logoList = Files.walk(Paths.get("../resources/company/"))
+              .filter(Files::isRegularFile).
+              collect(Collectors.toList());
+    } catch (IOException ex) {
+      Logger.getLogger(mianFrame.class.getName()).log(Level.SEVERE, null, ex);
+    }
+    
+    System.out.println(logoList.get(0).getFileName().toString().split("\\.")[0]);
 
     /* Create and display the form */
     java.awt.EventQueue.invokeLater(new Runnable() {
@@ -467,3 +488,46 @@ public class mianFrame extends javax.swing.JFrame {
   }
 
 }
+
+
+
+
+//public class gui {
+//    private JPanel mainPanel;
+//    private JLabel logoLabel;
+//
+//
+//    public gui() {
+//
+//        logoLabel.setIcon(new ImageIcon("resources/company/logo.png"));
+//
+//
+//    }
+//
+//
+//
+//    public static void main(String[] args) {
+//        JFrame mainFrame = new JFrame("Linux Installer");
+//        mainFrame.setContentPane(new gui().mainPanel);
+//        mainFrame.setDefaultCloseOperation(mainFrame.EXIT_ON_CLOSE);
+//        mainFrame.pack();
+//        mainFrame.setVisible(true);
+//
+////        File curDir = new File("");
+////        getAllFiles(curDir);
+//    }
+//
+//
+//    private static void getAllFiles(File curDir) {
+//
+//        File[] filesList = curDir.listFiles();
+//        for(File f : filesList){
+//            if(f.isDirectory())
+//                System.out.println(f.getName());
+//            if(f.isFile()){
+//                System.out.println(f.getName());
+//            }
+//        }
+//
+//    }
+//}
