@@ -40,7 +40,7 @@ public class mianFrame extends javax.swing.JFrame {
 
   String username = System.getProperty("user.name");
   String password;
-  String companyName;
+  String companyName = "";
   java.awt.CardLayout cl;
   JList<CheckboxListItem> componentList;
 
@@ -65,7 +65,6 @@ public class mianFrame extends javax.swing.JFrame {
         welcomeButton.setEnabled(true);
         username = welcomeNameTexField.getText();
         password = String.valueOf(welcomePasswordField.getPassword());
-        System.out.println(username + " " + password);
       }
 
     }
@@ -139,7 +138,7 @@ public class mianFrame extends javax.swing.JFrame {
     jPanelCard = new javax.swing.JPanel();
     jPanelInstallSelect = new javax.swing.JPanel();
     jScrollPane1 = new javax.swing.JScrollPane();
-    jList1 = new javax.swing.JList<>();
+    javax.swing.JList<CheckboxListItem> jList1 = new javax.swing.JList<>();
     jLabel3 = new javax.swing.JLabel();
     jButtonSelectAll = new javax.swing.JButton();
     jButtonClearAll = new javax.swing.JButton();
@@ -158,7 +157,7 @@ public class mianFrame extends javax.swing.JFrame {
 
     setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-    logoLabel.setIcon(new javax.swing.ImageIcon("/home/thor/install_script/resources/company/logo.png")); // NOI18N
+    logoLabel.setIcon(new javax.swing.ImageIcon("/home/thor/install_script/resources/company/default.png")); // NOI18N
 
     jPanelCard.setLayout(new java.awt.CardLayout());
 
@@ -327,11 +326,11 @@ public class mianFrame extends javax.swing.JFrame {
       .addGroup(layout.createSequentialGroup()
         .addContainerGap()
         .addComponent(logoLabel)
-        .addContainerGap(175, Short.MAX_VALUE))
+        .addContainerGap(272, Short.MAX_VALUE))
       .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
         .addGroup(layout.createSequentialGroup()
           .addContainerGap()
-          .addComponent(jPanelCard, javax.swing.GroupLayout.DEFAULT_SIZE, 395, Short.MAX_VALUE)
+          .addComponent(jPanelCard, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
           .addContainerGap()))
     );
     layout.setVerticalGroup(
@@ -339,7 +338,7 @@ public class mianFrame extends javax.swing.JFrame {
       .addGroup(layout.createSequentialGroup()
         .addContainerGap()
         .addComponent(logoLabel)
-        .addContainerGap(253, Short.MAX_VALUE))
+        .addContainerGap(151, Short.MAX_VALUE))
       .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
         .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
           .addGap(56, 56, 56)
@@ -376,6 +375,28 @@ public class mianFrame extends javax.swing.JFrame {
     }
   }//GEN-LAST:event_jButtonDoItActionPerformed
 
+  private void setLogoAndCompanyName() {
+    List<Path> logoList = null;
+
+    try {
+      logoList = Files.walk(Paths.get("../resources/company/"))
+              .filter(Files::isRegularFile).
+              collect(Collectors.toList());
+      
+      
+    } catch (IOException ex) {
+      Logger.getLogger(mianFrame.class.getName()).log(Level.SEVERE, null, ex);
+    }
+
+    for (Path companyFiles : logoList) {
+      if ("png".equals(companyFiles.getFileName().toString().split("\\.")[1])) {
+        companyName = companyFiles.getFileName().toString().split("\\.")[0];
+      }
+    }
+
+//    System.out.println(logoList.get(0).getFileName().toString().split("\\.")[0]);
+  }
+
   /**
    * @param args the command line arguments
    */
@@ -402,18 +423,6 @@ public class mianFrame extends javax.swing.JFrame {
       java.util.logging.Logger.getLogger(mianFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
     }
     //</editor-fold>
-    
-    List<Path> logoList = null;
-    
-    try {
-      logoList = Files.walk(Paths.get("../resources/company/"))
-              .filter(Files::isRegularFile).
-              collect(Collectors.toList());
-    } catch (IOException ex) {
-      Logger.getLogger(mianFrame.class.getName()).log(Level.SEVERE, null, ex);
-    }
-    
-    System.out.println(logoList.get(0).getFileName().toString().split("\\.")[0]);
 
     /* Create and display the form */
     java.awt.EventQueue.invokeLater(new Runnable() {
@@ -430,7 +439,6 @@ public class mianFrame extends javax.swing.JFrame {
   private javax.swing.JLabel jLabel1;
   private javax.swing.JLabel jLabel2;
   private javax.swing.JLabel jLabel3;
-  private javax.swing.JList<CheckboxListItem> jList1;
   private javax.swing.JPanel jPanel1;
   private javax.swing.JPanel jPanel2;
   private javax.swing.JPanel jPanel3;
@@ -488,9 +496,6 @@ public class mianFrame extends javax.swing.JFrame {
   }
 
 }
-
-
-
 
 //public class gui {
 //    private JPanel mainPanel;
