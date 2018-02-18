@@ -8,18 +8,33 @@ package gui;
 import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import static javafx.scene.input.DataFormat.URL;
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
@@ -33,7 +48,6 @@ import javax.swing.event.DocumentListener;
  */
 public class mianFrame extends javax.swing.JFrame {
 
-  private String welcomeText = "Welcome to the linux installer";
   private String welcomeDiscrption = "<html><center>This installer will install any<br/>"
           + "required programs and configure your<br/>"
           + "environment so it’s ready to use. Enjoy 😃</center></html>";
@@ -43,6 +57,19 @@ public class mianFrame extends javax.swing.JFrame {
   String companyName = "";
   java.awt.CardLayout cl;
   JList<CheckboxListItem> componentList;
+  List<Path> logoList = null;
+  JList<CheckboxListItem> scriptList;
+
+  private void setIcon() {
+
+    try {
+      URL resource = this.getClass().getResource("iconBlue.png");
+      BufferedImage image = ImageIO.read(resource);
+      this.setIconImage(image);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
 
   class WelcomeDocumentListener implements DocumentListener {
 
@@ -75,7 +102,6 @@ public class mianFrame extends javax.swing.JFrame {
    */
   public mianFrame() {
     initComponents();
-    welcomeTextLabel.setText("Welcome to " + companyName + " the linux installer");
     welcomeDiscriotnLabel.setText(welcomeDiscrption);
     welcomeDiscriotnLabel.setHorizontalTextPosition(SwingConstants.CENTER);
     welcomeNameTexField.setText(username);
@@ -85,27 +111,38 @@ public class mianFrame extends javax.swing.JFrame {
     jScrollPane1.setViewportView(componentList);
     cl = (java.awt.CardLayout) jPanelCard.getLayout();
     cl.next(jPanelCard);
-//    cl.next(jPanelInstallSelect);
-//        cl.next(bottomPanel);
-//    jPanelCard;
+    setLogoAndCompanyName();
+    welcomeTextLabel.setText("<html><center>Welcome to the" + companyName + "<br/>GTG Linux installer</center></html>");
+    getRootPane().setDefaultButton(welcomeButton);
+    setIcon();
+
   }
 
   JList getCheckboxScriptList() {
-    // Create a list containing CheckboxListItem's
-    JList<CheckboxListItem> list = new JList<CheckboxListItem>(
-            new CheckboxListItem[]{new CheckboxListItem("apple"),
-              new CheckboxListItem("orange"),
-              new CheckboxListItem("mango"),
-              new CheckboxListItem("paw paw"),
-              new CheckboxListItem("banana")});
+
+    CheckboxListItem[] scripts = null;
+    try {
+      List<Path> scriptPathList = null;
+      scriptPathList = Files.walk(Paths.get("../scripts/"))
+              .filter(Files::isRegularFile).
+              collect(Collectors.toList());
+      scripts = new CheckboxListItem[scriptPathList.size()];
+      int i = 0;
+      for (Path s : scriptPathList) {
+        scripts[i++] = (new CheckboxListItem(s));
+      }
+    } catch (IOException ex) {
+    }
+    scriptList = new JList<CheckboxListItem>(scripts);
+//    logoLabel.setIcon(new ImageIcon("../resources/defaults/default.png"));
 
     // Use a CheckboxListRenderer (see below)
     // to renderer list cells
-    list.setCellRenderer(new CheckboxListRenderer());
-    list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    scriptList.setCellRenderer(new CheckboxListRenderer());
+    scriptList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
     // Add a mouse listener to handle changing selection
-    list.addMouseListener(new MouseAdapter() {
+    scriptList.addMouseListener(new MouseAdapter() {
       public void mouseClicked(MouseEvent event) {
         JList<CheckboxListItem> list
                 = (JList<CheckboxListItem>) event.getSource();
@@ -122,7 +159,7 @@ public class mianFrame extends javax.swing.JFrame {
         list.repaint(list.getCellBounds(index, index));
       }
     });
-    return list;
+    return scriptList;
   }
 
   /**
@@ -134,6 +171,7 @@ public class mianFrame extends javax.swing.JFrame {
   // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
   private void initComponents() {
 
+    jProgressBar1 = new javax.swing.JProgressBar();
     logoLabel = new javax.swing.JLabel();
     jPanelCard = new javax.swing.JPanel();
     jPanelInstallSelect = new javax.swing.JPanel();
@@ -154,10 +192,15 @@ public class mianFrame extends javax.swing.JFrame {
     jLabel2 = new javax.swing.JLabel();
     jPanel3 = new javax.swing.JPanel();
     welcomeButton = new javax.swing.JButton();
+    progress = new javax.swing.JPanel();
+    jLabel4 = new javax.swing.JLabel();
+    progressBar = new javax.swing.JProgressBar();
+    jScrollPane2 = new javax.swing.JScrollPane();
+    taskOutput = new javax.swing.JTextArea();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-    logoLabel.setIcon(new javax.swing.ImageIcon("/home/thor/install_script/resources/company/default.png")); // NOI18N
+    logoLabel.setIcon(new javax.swing.ImageIcon("/home/thor/install_script/resources/company/Rovsing.png")); // NOI18N
 
     jPanelCard.setLayout(new java.awt.CardLayout());
 
@@ -319,6 +362,40 @@ public class mianFrame extends javax.swing.JFrame {
 
     jPanelCard.add(welcomePanel, "card2");
 
+    jLabel4.setText("Setup progress");
+
+    taskOutput.setColumns(20);
+    taskOutput.setRows(5);
+    jScrollPane2.setViewportView(taskOutput);
+
+    javax.swing.GroupLayout progressLayout = new javax.swing.GroupLayout(progress);
+    progress.setLayout(progressLayout);
+    progressLayout.setHorizontalGroup(
+      progressLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+      .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, progressLayout.createSequentialGroup()
+        .addContainerGap(144, Short.MAX_VALUE)
+        .addComponent(jLabel4)
+        .addGap(141, 141, 141))
+      .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, progressLayout.createSequentialGroup()
+        .addContainerGap()
+        .addGroup(progressLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+          .addComponent(jScrollPane2)
+          .addComponent(progressBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        .addContainerGap())
+    );
+    progressLayout.setVerticalGroup(
+      progressLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+      .addGroup(progressLayout.createSequentialGroup()
+        .addComponent(jLabel4)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 177, Short.MAX_VALUE)
+        .addContainerGap())
+    );
+
+    jPanelCard.add(progress, "card4");
+
     javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
     getContentPane().setLayout(layout);
     layout.setHorizontalGroup(
@@ -326,7 +403,7 @@ public class mianFrame extends javax.swing.JFrame {
       .addGroup(layout.createSequentialGroup()
         .addContainerGap()
         .addComponent(logoLabel)
-        .addContainerGap(272, Short.MAX_VALUE))
+        .addContainerGap(175, Short.MAX_VALUE))
       .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
         .addGroup(layout.createSequentialGroup()
           .addContainerGap()
@@ -338,7 +415,7 @@ public class mianFrame extends javax.swing.JFrame {
       .addGroup(layout.createSequentialGroup()
         .addContainerGap()
         .addComponent(logoLabel)
-        .addContainerGap(151, Short.MAX_VALUE))
+        .addContainerGap(253, Short.MAX_VALUE))
       .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
         .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
           .addGap(56, 56, 56)
@@ -352,6 +429,8 @@ public class mianFrame extends javax.swing.JFrame {
 
   private void welcomeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_welcomeButtonActionPerformed
     cl.next(jPanelCard);
+    getRootPane().setDefaultButton(jButtonDoIt);
+
   }//GEN-LAST:event_welcomeButtonActionPerformed
 
   private void jButtonClearAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonClearAllActionPerformed
@@ -370,37 +449,80 @@ public class mianFrame extends javax.swing.JFrame {
 
   private void jButtonDoItActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonDoItActionPerformed
     for (int i = 0; i < componentList.getModel().getSize(); i++) {
-      System.out.println(componentList.getModel().getElementAt(i).toString() + " "
-              + componentList.getModel().getElementAt(i).isSelected);
+      try {
+        if (!componentList.getModel().getElementAt(i).isSelected) {
+          continue;
+        }
+        ProcessBuilder builder = new ProcessBuilder();
+        builder.command("../resources/worker_scripts/script_entry_point", username, password, componentList.getModel().getElementAt(i).script.toString());
+//    builder.directory(new File(System.getProperty("user.home")));
+        Process process = builder.start();
+        StreamGobbler streamGobbler
+                = new StreamGobbler(process.getInputStream(), System.out::println);
+        Executors.newSingleThreadExecutor().submit(streamGobbler);
+        int exitCode = process.waitFor();
+        System.out.println("Exit code: " + exitCode);
+        process.destroy();
+      } catch (IOException | InterruptedException ex) {
+        Logger.getLogger(mianFrame.class.getName()).log(Level.SEVERE, null, ex);
+      }
+    }
+    Object[] options = {"Wait! I missed something",
+      "Nice! I'm done here"};
+    int n = JOptionPane.showOptionDialog(this,
+            "<html><font size=\"5\"><b>Grats! Your system is Good To Go.</b></font></html>",
+            "Setup complete",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.QUESTION_MESSAGE,
+            new ImageIcon("../resources/defaults/cheersIconSmall.png"),
+            options,
+            options[1]);
+    if (n != 0) {
+      this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
     }
   }//GEN-LAST:event_jButtonDoItActionPerformed
 
   private void setLogoAndCompanyName() {
-    List<Path> logoList = null;
-
     try {
       logoList = Files.walk(Paths.get("../resources/company/"))
               .filter(Files::isRegularFile).
               collect(Collectors.toList());
-      
-      
-    } catch (IOException ex) {
-      Logger.getLogger(mianFrame.class.getName()).log(Level.SEVERE, null, ex);
-    }
-
-    for (Path companyFiles : logoList) {
-      if ("png".equals(companyFiles.getFileName().toString().split("\\.")[1])) {
-        companyName = companyFiles.getFileName().toString().split("\\.")[0];
+      for (Path companyFiles : logoList) {
+        if ("png".equals(companyFiles.getFileName().toString().split("\\.")[1])) {
+          companyName = " " + companyFiles.getFileName().toString().split("\\.")[0];
+          logoLabel.setIcon(new ImageIcon("../resources/company/" + companyFiles.getFileName().toString()));
+          return;
+        }
       }
+    } catch (IOException ex) {
+    }
+    logoLabel.setIcon(new ImageIcon("../resources/defaults/default.png"));
+
+  }
+
+  private static class StreamGobbler implements Runnable {
+
+    private InputStream inputStream;
+    private Consumer<String> consumer;
+
+    public StreamGobbler(InputStream inputStream, Consumer<String> consumer) {
+      this.inputStream = inputStream;
+      this.consumer = consumer;
     }
 
-//    System.out.println(logoList.get(0).getFileName().toString().split("\\.")[0]);
+    @Override
+    public void run() {
+      new BufferedReader(new InputStreamReader(inputStream)).lines()
+              .forEach(consumer);
+    }
   }
 
   /**
    * @param args the command line arguments
    */
   public static void main(String args[]) {
+
+
     /* Set the Nimbus look and feel */
     //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
     /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
@@ -423,7 +545,6 @@ public class mianFrame extends javax.swing.JFrame {
       java.util.logging.Logger.getLogger(mianFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
     }
     //</editor-fold>
-
     /* Create and display the form */
     java.awt.EventQueue.invokeLater(new Runnable() {
       public void run() {
@@ -439,13 +560,19 @@ public class mianFrame extends javax.swing.JFrame {
   private javax.swing.JLabel jLabel1;
   private javax.swing.JLabel jLabel2;
   private javax.swing.JLabel jLabel3;
+  private javax.swing.JLabel jLabel4;
   private javax.swing.JPanel jPanel1;
   private javax.swing.JPanel jPanel2;
   private javax.swing.JPanel jPanel3;
   private javax.swing.JPanel jPanelCard;
   private javax.swing.JPanel jPanelInstallSelect;
+  private javax.swing.JProgressBar jProgressBar1;
   private javax.swing.JScrollPane jScrollPane1;
+  private javax.swing.JScrollPane jScrollPane2;
   private javax.swing.JLabel logoLabel;
+  private javax.swing.JPanel progress;
+  private javax.swing.JProgressBar progressBar;
+  private javax.swing.JTextArea taskOutput;
   private javax.swing.JButton welcomeButton;
   private javax.swing.JLabel welcomeDiscriotnLabel;
   private javax.swing.JTextField welcomeNameTexField;
@@ -457,11 +584,11 @@ public class mianFrame extends javax.swing.JFrame {
 // Represents items in the list that can be selected
   class CheckboxListItem {
 
-    private String label;
     private boolean isSelected = false;
+    private Path script;
 
-    public CheckboxListItem(String label) {
-      this.label = label;
+    public CheckboxListItem(Path label) {
+      this.script = label;
       setSelected(true);
     }
 
@@ -474,7 +601,13 @@ public class mianFrame extends javax.swing.JFrame {
     }
 
     public String toString() {
-      return label;
+      String name;
+      name = script.getFileName().toString();
+      try {
+        name = name.split("\\.")[0];
+      } catch (Exception e) {
+      }
+      return name;
     }
   }
 
