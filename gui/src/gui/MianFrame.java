@@ -37,17 +37,24 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import static javafx.scene.input.DataFormat.URL;
 import javax.imageio.ImageIO;
+import javax.print.attribute.AttributeSetUtilities;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
+import javax.swing.JTextPane;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingWorker;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultCaret;
+import static javax.swing.text.DefaultCaret.ALWAYS_UPDATE;
+import javax.swing.text.html.HTML;
 
 /**
  *
@@ -64,10 +71,13 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
   String companyName = "";
   java.awt.CardLayout cl;
   JList<CheckboxListItem> componentList;
+  CheckboxListItem currentScript;
+
   List<Path> logoList = null;
   JList<CheckboxListItem> scriptList;
   Task task;
   boolean isDone = false;
+  private int scriptCompleated;
 
   private void setIcon() {
 
@@ -113,8 +123,12 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
     if ("progress" == evt.getPropertyName()) {
       int progress = (Integer) evt.getNewValue();
       progressBar.setValue(progress);
+//      "("+ scriptCompleated + "/" + selectedScriptsCount+  ") Starting task ~> " + currentScript.toString()
       taskOutput.append(String.format(
-              "Completed %d%% of task.\n", task.getProgress()));
+              "\n(%02d/%02d) Starting task ~> %s.\n\n",
+              scriptCompleated,
+              selectedScriptsCount,
+              currentScript.toString()));
     }
   }
 
@@ -126,10 +140,9 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
     public Task(MianFrame mother) {
       this.mother = mother;
     }
-    
+
 //    public b cancel
-    
-    public void mycancel(boolean mayInterruptIfRunning){
+    public void mycancel(boolean mayInterruptIfRunning) {
       gotCanceled = true;
       cancel(mayInterruptIfRunning);
     }
@@ -139,43 +152,30 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
      */
     @Override
     public Void doInBackground() {
-      setProgress(0);
-      
-
-//      for (int i = 0; i < componentList.getModel().getSize(); i++) {
-//        try {
-//          if (!componentList.getModel().getElementAt(i).isSelected) {
-//            continue;
-//          }
-//          ProcessBuilder builder = new ProcessBuilder();
-//          builder.command("../resources/worker_scripts/script_entry_point", username, password, componentList.getModel().getElementAt(i).script.toString());
-////    builder.directory(new File(System.getProperty("user.home")));
-//          Process process = builder.start();
-//          StreamGobbler streamGobbler = new StreamGobbler(process.getInputStream(), System.out::println);
-//          Executors.newSingleThreadExecutor().submit(streamGobbler);
-//          int exitCode = process.waitFor();
-//          System.out.println("Exit code: " + exitCode);
-//          process.destroy();
-//        } catch (IOException | InterruptedException ex) {
-//          System.out.println("Failed in script execution");
-//        }
-//      }
-      Random random = new Random();
-      int progress = 0;
-      //Initialize progress property.
-      setProgress(0);
-      while (progress < 100) {
-        //Sleep for up to one second.
+      double taskPercent = 100 / selectedScriptsCount;
+      int progressPercent = 0;
+      for (int i = 0; i < componentList.getModel().getSize(); i++) {
         try {
-          Thread.sleep(random.nextInt(1000));
-        } catch (InterruptedException ignore) {
+          if (!componentList.getModel().getElementAt(i).isSelected) {
+            continue;
+          }
+          ProcessBuilder builder = new ProcessBuilder();
+          currentScript = componentList.getModel().getElementAt(i);
+          progressPercent += Math.round(taskPercent);
+          setProgress(progressPercent);
+          builder.command("../resources/worker_scripts/script_entry_point", username, password, currentScript.script.toString());
+          Process process = builder.start();
+          StreamGobbler streamGobbler = new StreamGobbler(process.getInputStream(), (x) -> taskOutput.append(x + "\n"));
+          Executors.newSingleThreadExecutor().submit(streamGobbler);
+          int exitCode = process.waitFor();
+          taskOutput.append("Exit code: " + exitCode);
+          process.destroy();
+        } catch (IOException | InterruptedException ex) {
+          System.out.println("Failed in script execution");
         }
-        //Make random progress.
-        progress += random.nextInt(10);
-        setProgress(Math.min(progress, 100));
       }
-      taskOutput.append(String.format(
-              "From inside tastk Completed %d%% of task.\n", progress));
+      setProgress(100);
+
       return null;
     }
 
@@ -186,7 +186,9 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
     public void done() {
       isDone = true;
       cancelBackBut.setText("Back");
-      if (gotCanceled) return;
+      if (gotCanceled) {
+        return;
+      }
       Toolkit.getDefaultToolkit().beep();
       setCursor(null); //turn off the wait cursor
       taskOutput.append("Done!\n");
@@ -228,6 +230,8 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
     progressBar.setValue(0);
     progressBar.setStringPainted(true);
     taskOutput.setEditable(false);
+    DefaultCaret caret = (DefaultCaret) taskOutput.getCaret();
+    caret.setUpdatePolicy(ALWAYS_UPDATE);
 
   }
 
@@ -584,39 +588,6 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
     task.execute();
     cl.next(jPanelCard);
     cl.next(jPanelCard);
-
-//    for (int i = 0; i < componentList.getModel().getSize(); i++) {
-//      try {
-//        if (!componentList.getModel().getElementAt(i).isSelected) {
-//          continue;
-//        }
-//        ProcessBuilder builder = new ProcessBuilder();
-//        builder.command("../resources/worker_scripts/script_entry_point", username, password, componentList.getModel().getElementAt(i).script.toString());
-////    builder.directory(new File(System.getProperty("user.home")));
-//        Process process = builder.start();
-//        StreamGobbler streamGobbler
-//                = new StreamGobbler(process.getInputStream(), System.out::println);
-//        Executors.newSingleThreadExecutor().submit(streamGobbler);
-//        int exitCode = process.waitFor();
-//        System.out.println("Exit code: " + exitCode);
-//        process.destroy();
-//      } catch (IOException | InterruptedException ex) {
-//        Logger.getLogger(mianFrame.class.getName()).log(Level.SEVERE, null, ex);
-//      }
-//    }
-//    Object[] options = {"Wait! I missed something",
-//      "Nice! I'm done here"};
-//    int n = JOptionPane.showOptionDialog(this,
-//            "<html><font size=\"5\"><b>Grats! Your system is Good To Go.</b></font></html>",
-//            "Setup complete",
-//            JOptionPane.YES_NO_OPTION,
-//            JOptionPane.QUESTION_MESSAGE,
-//            new ImageIcon("../resources/defaults/cheersIconSmall.png"),
-//            options,
-//            options[1]);
-//    if (n != 0) {
-//      this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
-//    }
   }//GEN-LAST:event_jButtonDoItActionPerformed
 
   private void cancelBackButActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelBackButActionPerformed
@@ -728,11 +699,14 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
   private javax.swing.JLabel welcomeTextLabel;
   // End of variables declaration//GEN-END:variables
 
+  int selectedScriptsCount = 0;
 // Represents items in the list that can be selected
+
   class CheckboxListItem {
 
     private boolean isSelected = false;
     private Path script;
+//    public static int selectedCount = 0;
 
     public CheckboxListItem(Path label) {
       this.script = label;
@@ -745,6 +719,7 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
 
     public void setSelected(boolean isSelected) {
       this.isSelected = isSelected;
+      selectedScriptsCount += isSelected ? 1 : - 1;
     }
 
     public String toString() {
