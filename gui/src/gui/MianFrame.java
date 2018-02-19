@@ -9,10 +9,15 @@ import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.GridLayout;
 import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -24,6 +29,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.logging.Level;
@@ -39,6 +45,7 @@ import javax.swing.JScrollPane;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingWorker;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -46,7 +53,7 @@ import javax.swing.event.DocumentListener;
  *
  * @author thor
  */
-public class mianFrame extends javax.swing.JFrame {
+public class MianFrame extends javax.swing.JFrame implements PropertyChangeListener {
 
   private String welcomeDiscrption = "<html><center>This installer will install any<br/>"
           + "required programs and configure your<br/>"
@@ -59,6 +66,8 @@ public class mianFrame extends javax.swing.JFrame {
   JList<CheckboxListItem> componentList;
   List<Path> logoList = null;
   JList<CheckboxListItem> scriptList;
+  Task task;
+  boolean isDone = false;
 
   private void setIcon() {
 
@@ -98,9 +107,109 @@ public class mianFrame extends javax.swing.JFrame {
   };
 
   /**
+   * Invoked when task's progress property changes.
+   */
+  public void propertyChange(PropertyChangeEvent evt) {
+    if ("progress" == evt.getPropertyName()) {
+      int progress = (Integer) evt.getNewValue();
+      progressBar.setValue(progress);
+      taskOutput.append(String.format(
+              "Completed %d%% of task.\n", task.getProgress()));
+    }
+  }
+
+  class Task extends SwingWorker<Void, Void> {
+
+    MianFrame mother;
+    boolean gotCanceled = false;
+
+    public Task(MianFrame mother) {
+      this.mother = mother;
+    }
+    
+//    public b cancel
+    
+    public void mycancel(boolean mayInterruptIfRunning){
+      gotCanceled = true;
+      cancel(mayInterruptIfRunning);
+    }
+
+    /*
+         * Main task. Executed in background thread.
+     */
+    @Override
+    public Void doInBackground() {
+      setProgress(0);
+      
+
+//      for (int i = 0; i < componentList.getModel().getSize(); i++) {
+//        try {
+//          if (!componentList.getModel().getElementAt(i).isSelected) {
+//            continue;
+//          }
+//          ProcessBuilder builder = new ProcessBuilder();
+//          builder.command("../resources/worker_scripts/script_entry_point", username, password, componentList.getModel().getElementAt(i).script.toString());
+////    builder.directory(new File(System.getProperty("user.home")));
+//          Process process = builder.start();
+//          StreamGobbler streamGobbler = new StreamGobbler(process.getInputStream(), System.out::println);
+//          Executors.newSingleThreadExecutor().submit(streamGobbler);
+//          int exitCode = process.waitFor();
+//          System.out.println("Exit code: " + exitCode);
+//          process.destroy();
+//        } catch (IOException | InterruptedException ex) {
+//          System.out.println("Failed in script execution");
+//        }
+//      }
+      Random random = new Random();
+      int progress = 0;
+      //Initialize progress property.
+      setProgress(0);
+      while (progress < 100) {
+        //Sleep for up to one second.
+        try {
+          Thread.sleep(random.nextInt(1000));
+        } catch (InterruptedException ignore) {
+        }
+        //Make random progress.
+        progress += random.nextInt(10);
+        setProgress(Math.min(progress, 100));
+      }
+      taskOutput.append(String.format(
+              "From inside tastk Completed %d%% of task.\n", progress));
+      return null;
+    }
+
+    /*
+         * Executed in event dispatching thread
+     */
+    @Override
+    public void done() {
+      isDone = true;
+      cancelBackBut.setText("Back");
+      if (gotCanceled) return;
+      Toolkit.getDefaultToolkit().beep();
+      setCursor(null); //turn off the wait cursor
+      taskOutput.append("Done!\n");
+      Object[] options = {"Wait! I missed something",
+        "Nice! I'm done here"};
+      int n = JOptionPane.showOptionDialog(mother,
+              "<html><font size=\"5\"><b>Grats! Your system is Good To Go.</b></font></html>",
+              "Setup complete",
+              JOptionPane.YES_NO_OPTION,
+              JOptionPane.QUESTION_MESSAGE,
+              new ImageIcon("../resources/defaults/cheersIconSmall.png"),
+              options,
+              options[1]);
+      if (n != 0) {
+        mother.dispatchEvent(new WindowEvent(mother, WindowEvent.WINDOW_CLOSING));
+      }
+    }
+  }
+
+  /**
    * Creates new form mianFrame
    */
-  public mianFrame() {
+  public MianFrame() {
     initComponents();
     welcomeDiscriotnLabel.setText(welcomeDiscrption);
     welcomeDiscriotnLabel.setHorizontalTextPosition(SwingConstants.CENTER);
@@ -111,10 +220,14 @@ public class mianFrame extends javax.swing.JFrame {
     jScrollPane1.setViewportView(componentList);
     cl = (java.awt.CardLayout) jPanelCard.getLayout();
     cl.next(jPanelCard);
+
     setLogoAndCompanyName();
     welcomeTextLabel.setText("<html><center>Welcome to the" + companyName + "<br/>GTG Linux installer</center></html>");
     getRootPane().setDefaultButton(welcomeButton);
     setIcon();
+    progressBar.setValue(0);
+    progressBar.setStringPainted(true);
+    taskOutput.setEditable(false);
 
   }
 
@@ -197,6 +310,7 @@ public class mianFrame extends javax.swing.JFrame {
     progressBar = new javax.swing.JProgressBar();
     jScrollPane2 = new javax.swing.JScrollPane();
     taskOutput = new javax.swing.JTextArea();
+    cancelBackBut = new javax.swing.JButton();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -368,29 +482,42 @@ public class mianFrame extends javax.swing.JFrame {
     taskOutput.setRows(5);
     jScrollPane2.setViewportView(taskOutput);
 
+    cancelBackBut.setText("Cancel");
+    cancelBackBut.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        cancelBackButActionPerformed(evt);
+      }
+    });
+
     javax.swing.GroupLayout progressLayout = new javax.swing.GroupLayout(progress);
     progress.setLayout(progressLayout);
     progressLayout.setHorizontalGroup(
       progressLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-      .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, progressLayout.createSequentialGroup()
-        .addContainerGap(144, Short.MAX_VALUE)
-        .addComponent(jLabel4)
-        .addGap(141, 141, 141))
-      .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, progressLayout.createSequentialGroup()
+      .addGroup(progressLayout.createSequentialGroup()
         .addContainerGap()
-        .addGroup(progressLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-          .addComponent(jScrollPane2)
-          .addComponent(progressBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        .addContainerGap())
+        .addGroup(progressLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+          .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, progressLayout.createSequentialGroup()
+            .addGroup(progressLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+              .addComponent(jScrollPane2)
+              .addComponent(progressBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addContainerGap())
+          .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, progressLayout.createSequentialGroup()
+            .addGap(154, 154, 154)
+            .addComponent(cancelBackBut, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGap(158, 158, 158))
+          .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
     );
     progressLayout.setVerticalGroup(
       progressLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
       .addGroup(progressLayout.createSequentialGroup()
+        .addContainerGap()
         .addComponent(jLabel4)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-        .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 177, Short.MAX_VALUE)
+        .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 134, Short.MAX_VALUE)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addComponent(cancelBackBut)
         .addContainerGap())
     );
 
@@ -429,6 +556,8 @@ public class mianFrame extends javax.swing.JFrame {
 
   private void welcomeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_welcomeButtonActionPerformed
     cl.next(jPanelCard);
+    cl.next(jPanelCard);
+
     getRootPane().setDefaultButton(jButtonDoIt);
 
   }//GEN-LAST:event_welcomeButtonActionPerformed
@@ -447,40 +576,57 @@ public class mianFrame extends javax.swing.JFrame {
     }
   }//GEN-LAST:event_jButtonSelectAllActionPerformed
 
+
   private void jButtonDoItActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonDoItActionPerformed
-    for (int i = 0; i < componentList.getModel().getSize(); i++) {
-      try {
-        if (!componentList.getModel().getElementAt(i).isSelected) {
-          continue;
-        }
-        ProcessBuilder builder = new ProcessBuilder();
-        builder.command("../resources/worker_scripts/script_entry_point", username, password, componentList.getModel().getElementAt(i).script.toString());
-//    builder.directory(new File(System.getProperty("user.home")));
-        Process process = builder.start();
-        StreamGobbler streamGobbler
-                = new StreamGobbler(process.getInputStream(), System.out::println);
-        Executors.newSingleThreadExecutor().submit(streamGobbler);
-        int exitCode = process.waitFor();
-        System.out.println("Exit code: " + exitCode);
-        process.destroy();
-      } catch (IOException | InterruptedException ex) {
-        Logger.getLogger(mianFrame.class.getName()).log(Level.SEVERE, null, ex);
-      }
-    }
-    Object[] options = {"Wait! I missed something",
-      "Nice! I'm done here"};
-    int n = JOptionPane.showOptionDialog(this,
-            "<html><font size=\"5\"><b>Grats! Your system is Good To Go.</b></font></html>",
-            "Setup complete",
-            JOptionPane.YES_NO_OPTION,
-            JOptionPane.QUESTION_MESSAGE,
-            new ImageIcon("../resources/defaults/cheersIconSmall.png"),
-            options,
-            options[1]);
-    if (n != 0) {
-      this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
-    }
+
+    task = new Task(this);
+    task.addPropertyChangeListener(this);
+    task.execute();
+    cl.next(jPanelCard);
+    cl.next(jPanelCard);
+
+//    for (int i = 0; i < componentList.getModel().getSize(); i++) {
+//      try {
+//        if (!componentList.getModel().getElementAt(i).isSelected) {
+//          continue;
+//        }
+//        ProcessBuilder builder = new ProcessBuilder();
+//        builder.command("../resources/worker_scripts/script_entry_point", username, password, componentList.getModel().getElementAt(i).script.toString());
+////    builder.directory(new File(System.getProperty("user.home")));
+//        Process process = builder.start();
+//        StreamGobbler streamGobbler
+//                = new StreamGobbler(process.getInputStream(), System.out::println);
+//        Executors.newSingleThreadExecutor().submit(streamGobbler);
+//        int exitCode = process.waitFor();
+//        System.out.println("Exit code: " + exitCode);
+//        process.destroy();
+//      } catch (IOException | InterruptedException ex) {
+//        Logger.getLogger(mianFrame.class.getName()).log(Level.SEVERE, null, ex);
+//      }
+//    }
+//    Object[] options = {"Wait! I missed something",
+//      "Nice! I'm done here"};
+//    int n = JOptionPane.showOptionDialog(this,
+//            "<html><font size=\"5\"><b>Grats! Your system is Good To Go.</b></font></html>",
+//            "Setup complete",
+//            JOptionPane.YES_NO_OPTION,
+//            JOptionPane.QUESTION_MESSAGE,
+//            new ImageIcon("../resources/defaults/cheersIconSmall.png"),
+//            options,
+//            options[1]);
+//    if (n != 0) {
+//      this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+//    }
   }//GEN-LAST:event_jButtonDoItActionPerformed
+
+  private void cancelBackButActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelBackButActionPerformed
+    if (isDone) {
+      cl.next(jPanelCard);
+    } else {
+      task.mycancel(true);
+    }
+    cancelBackBut.setText("Cancel");
+  }//GEN-LAST:event_cancelBackButActionPerformed
 
   private void setLogoAndCompanyName() {
     try {
@@ -536,24 +682,25 @@ public class mianFrame extends javax.swing.JFrame {
         }
       }
     } catch (ClassNotFoundException ex) {
-      java.util.logging.Logger.getLogger(mianFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+      java.util.logging.Logger.getLogger(MianFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
     } catch (InstantiationException ex) {
-      java.util.logging.Logger.getLogger(mianFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+      java.util.logging.Logger.getLogger(MianFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
     } catch (IllegalAccessException ex) {
-      java.util.logging.Logger.getLogger(mianFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+      java.util.logging.Logger.getLogger(MianFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
     } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-      java.util.logging.Logger.getLogger(mianFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+      java.util.logging.Logger.getLogger(MianFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
     }
     //</editor-fold>
     /* Create and display the form */
     java.awt.EventQueue.invokeLater(new Runnable() {
       public void run() {
-        new mianFrame().setVisible(true);
+        new MianFrame().setVisible(true);
       }
     });
   }
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
+  private javax.swing.JButton cancelBackBut;
   private javax.swing.JButton jButtonClearAll;
   private javax.swing.JButton jButtonDoIt;
   private javax.swing.JButton jButtonSelectAll;
