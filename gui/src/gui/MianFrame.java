@@ -23,8 +23,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -72,6 +74,7 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
   java.awt.CardLayout cl;
   JList<CheckboxListItem> componentList;
   CheckboxListItem currentScript;
+  static String basePath;
 
   List<Path> logoList = null;
   JList<CheckboxListItem> scriptList;
@@ -168,7 +171,7 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
           currentScript = componentList.getModel().getElementAt(i);
           progressPercent += Math.round(taskPercent);
           setProgress(progressPercent);
-          builder.command("../resources/worker_scripts/script_entry_point", username, password, currentScript.script.toString());
+          builder.command(basePath + "resources/worker_scripts/script_entry_point", username, password, currentScript.script.toString());
           scriptProcess = builder.start();
           StreamGobbler streamGobbler = new StreamGobbler(scriptProcess.getInputStream(), (x) -> taskOutput.append(x + "\n"));
           Executors.newSingleThreadExecutor().submit(streamGobbler);
@@ -207,7 +210,7 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
               "Setup complete",
               JOptionPane.YES_NO_OPTION,
               JOptionPane.QUESTION_MESSAGE,
-              new ImageIcon("../resources/defaults/cheersIconSmall.png"),
+              new ImageIcon(basePath + "resources/defaults/cheersIconSmall.png"),
               options,
               options[1]);
       if (n != 0) {
@@ -248,7 +251,7 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
     CheckboxListItem[] scripts = null;
     try {
       List<Path> scriptPathList = null;
-      scriptPathList = Files.walk(Paths.get("../scripts/"))
+      scriptPathList = Files.walk(Paths.get(basePath + "scripts/"))
               .filter(Files::isRegularFile).
               collect(Collectors.toList());
       scripts = new CheckboxListItem[scriptPathList.size()];
@@ -259,7 +262,7 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
     } catch (IOException ex) {
     }
     scriptList = new JList<CheckboxListItem>(scripts);
-//    logoLabel.setIcon(new ImageIcon("../resources/defaults/default.png"));
+//    logoLabel.setIcon(new ImageIcon("resources/defaults/default.png"));
 
     // Use a CheckboxListRenderer (see below)
     // to renderer list cells
@@ -611,19 +614,19 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
 
   private void setLogoAndCompanyName() {
     try {
-      logoList = Files.walk(Paths.get("../resources/company/"))
+      logoList = Files.walk(Paths.get(basePath + "resources/company/"))
               .filter(Files::isRegularFile).
               collect(Collectors.toList());
       for (Path companyFiles : logoList) {
         if ("png".equals(companyFiles.getFileName().toString().split("\\.")[1])) {
           companyName = " " + companyFiles.getFileName().toString().split("\\.")[0];
-          logoLabel.setIcon(new ImageIcon("../resources/company/" + companyFiles.getFileName().toString()));
+          logoLabel.setIcon(new ImageIcon(basePath + "resources/company/" + companyFiles.getFileName().toString()));
           return;
         }
       }
     } catch (IOException ex) {
     }
-    logoLabel.setIcon(new ImageIcon("../resources/defaults/default.png"));
+    logoLabel.setIcon(new ImageIcon(basePath + "resources/defaults/default.png"));
 
   }
 
@@ -647,9 +650,12 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
   /**
    * @param args the command line arguments
    */
-  public static void main(String args[]) {
+  public static void main(String args[]) throws UnsupportedEncodingException {
 
-
+     basePath = new File("").getAbsolutePath() + "/";
+//     System.out.println(basePath);
+////    basePath = "/";
+//
     /* Set the Nimbus look and feel */
     //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
     /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
