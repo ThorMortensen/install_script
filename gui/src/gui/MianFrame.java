@@ -124,11 +124,15 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
       int progress = (Integer) evt.getNewValue();
       progressBar.setValue(progress);
 //      "("+ scriptCompleated + "/" + selectedScriptsCount+  ") Starting task ~> " + currentScript.toString()
-      taskOutput.append(String.format(
-              "\n(%02d/%02d) Starting task ~> %s.\n\n",
-              scriptCompleated,
-              selectedScriptsCount,
-              currentScript.toString()));
+      if (task.isCancelled()) {
+
+      } else {
+        taskOutput.append(String.format(
+                "\n(%02d/%02d) Starting task ~> %s.\n\n",
+                scriptCompleated,
+                selectedScriptsCount,
+                currentScript.toString()));
+      }
     }
   }
 
@@ -136,16 +140,17 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
 
     MianFrame mother;
     boolean gotCanceled = false;
+    Process scriptProcess;
 
     public Task(MianFrame mother) {
       this.mother = mother;
     }
 
-//    public b cancel
-    public void mycancel(boolean mayInterruptIfRunning) {
-      gotCanceled = true;
-      cancel(mayInterruptIfRunning);
-    }
+////    public b cancel
+//    public void mycancel(boolean mayInterruptIfRunning) {
+//      gotCanceled = true;
+//      cancel(mayInterruptIfRunning);
+//    }
 
     /*
          * Main task. Executed in background thread.
@@ -164,14 +169,15 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
           progressPercent += Math.round(taskPercent);
           setProgress(progressPercent);
           builder.command("../resources/worker_scripts/script_entry_point", username, password, currentScript.script.toString());
-          Process process = builder.start();
-          StreamGobbler streamGobbler = new StreamGobbler(process.getInputStream(), (x) -> taskOutput.append(x + "\n"));
+          scriptProcess = builder.start();
+          StreamGobbler streamGobbler = new StreamGobbler(scriptProcess.getInputStream(), (x) -> taskOutput.append(x + "\n"));
           Executors.newSingleThreadExecutor().submit(streamGobbler);
-          int exitCode = process.waitFor();
+          int exitCode = scriptProcess.waitFor();
           taskOutput.append("Exit code: " + exitCode);
-          process.destroy();
+          scriptProcess.destroy();
         } catch (IOException | InterruptedException ex) {
           System.out.println("Failed in script execution");
+          return null;
         }
       }
       setProgress(100);
@@ -185,13 +191,15 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
     @Override
     public void done() {
       isDone = true;
-      cancelBackBut.setText("Back");
-      if (gotCanceled) {
+      if (isCancelled()) {
+        taskOutput.append("CANCEL!");
+        cancelBackBut.setText("Back");
+        scriptProcess.destroy();
         return;
       }
       Toolkit.getDefaultToolkit().beep();
       setCursor(null); //turn off the wait cursor
-      taskOutput.append("Done!\n");
+      taskOutput.append("\nDone!\n");
       Object[] options = {"Wait! I missed something",
         "Nice! I'm done here"};
       int n = JOptionPane.showOptionDialog(mother,
@@ -588,15 +596,17 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
     task.execute();
     cl.next(jPanelCard);
     cl.next(jPanelCard);
+    isDone = false;
+    cancelBackBut.setText("Cancel");
   }//GEN-LAST:event_jButtonDoItActionPerformed
 
   private void cancelBackButActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelBackButActionPerformed
     if (isDone) {
       cl.next(jPanelCard);
     } else {
-      task.mycancel(true);
+      task.cancel(true);
     }
-    cancelBackBut.setText("Cancel");
+
   }//GEN-LAST:event_cancelBackButActionPerformed
 
   private void setLogoAndCompanyName() {
