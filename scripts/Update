@@ -1,0 +1,14 @@
+#!/bin/sh
+
+
+echo "Hello from Update script"
+
+# echo $0 #>> log
+sleep 1
+echo $1 #>> log
+sleep 1
+echo $2 #>> log
+sleep 1
+echo $3 #>> log
+sleep 1
+echo "end" #>> log

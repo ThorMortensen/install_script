@@ -1,14 +1,16 @@
 #!/bin/sh
 
-# echo $0 #>> log
-sleep 1
-echo $1 #>> log
-sleep 1
-echo $2 #>> log
-sleep 1
-echo $3 #>> log
-sleep 1
-echo "end" #>> log
+x-terminal-emulator -x ./$1 "$2" "$3"
+
+# # echo $0 #>> log
+# sleep 1
+# echo $1 #>> log
+# sleep 1
+# echo $2 #>> log
+# sleep 1
+# echo $3 #>> log
+# sleep 1
+# echo "end" #>> log
 
 
 # while true; do
