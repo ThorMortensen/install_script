@@ -5,13 +5,8 @@
  */
 package gui;
 
-import java.awt.CardLayout;
 import java.awt.Component;
-import java.awt.GridLayout;
-import java.awt.Image;
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
@@ -24,39 +19,27 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import static javafx.scene.input.DataFormat.URL;
 import javax.imageio.ImageIO;
-import javax.print.attribute.AttributeSetUtilities;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
-import javax.swing.JTextPane;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingWorker;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultCaret;
 import static javax.swing.text.DefaultCaret.ALWAYS_UPDATE;
-import javax.swing.text.html.HTML;
 
 /**
  *
@@ -162,6 +145,7 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
     public Void doInBackground() {
       double taskPercent = 100 / selectedScriptsCount;
       int progressPercent = 0;
+      setProgress(progressPercent);
       for (int i = 0; i < componentList.getModel().getSize(); i++) {
         try {
           if (!componentList.getModel().getElementAt(i).isSelected) {
@@ -169,15 +153,15 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
           }
           ProcessBuilder builder = new ProcessBuilder();
           currentScript = componentList.getModel().getElementAt(i);
-          progressPercent += Math.round(taskPercent);
-          setProgress(progressPercent);
-          builder.command(basePath + "resources/worker_scripts/script_entry_point", username, password, currentScript.script.toString());
+          builder.command(basePath + "resources/worker_scripts/script_entry_point", currentScript.script.toString(), username, password);
           scriptProcess = builder.start();
           StreamGobbler streamGobbler = new StreamGobbler(scriptProcess.getInputStream(), (x) -> taskOutput.append(x + "\n"));
           Executors.newSingleThreadExecutor().submit(streamGobbler);
           int exitCode = scriptProcess.waitFor();
           taskOutput.append("Exit code: " + exitCode);
           scriptProcess.destroy();
+          progressPercent += Math.round(taskPercent);
+          setProgress(progressPercent);
         } catch (IOException | InterruptedException ex) {
           System.out.println("Failed in script execution");
           return null;
@@ -194,9 +178,9 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
     @Override
     public void done() {
       isDone = true;
+      cancelBackBut.setText("Back");
       if (isCancelled()) {
         taskOutput.append("CANCEL!");
-        cancelBackBut.setText("Back");
         scriptProcess.destroy();
         return;
       }
@@ -593,7 +577,7 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
 
 
   private void jButtonDoItActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonDoItActionPerformed
-
+    progressBar.setValue(0);
     task = new Task(this);
     task.addPropertyChangeListener(this);
     task.execute();
@@ -652,7 +636,7 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
    */
   public static void main(String args[]) throws UnsupportedEncodingException {
 
-     basePath = new File("").getAbsolutePath() + "/";
+    basePath = new File("").getAbsolutePath() + "/";
 //     System.out.println(basePath);
 ////    basePath = "/";
 //

@@ -1,6 +1,13 @@
 #!/bin/sh
 
-x-terminal-emulator -x ./$1 "$2" "$3"
+
+echo "Running entry point"
+
+. $1
+# x-terminal-emulator -x sh /home/thor/install_script/scripts/Update
+# gnome-terminal -x /home/thor/install_script/scripts/Update
+
+# '$2' '$3'
 
 # # echo $0 #>> log
 # sleep 1
