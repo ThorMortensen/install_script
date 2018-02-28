@@ -5,4 +5,7 @@ if [ "$1" == "-h" ]; then
   exit 0
 fi
 
+
+echo $3 | sudo -S add-apt-repository ppa:webupd8team/atom -y 
+echo $3 | sudo -S apt -y update
 echo $3 | sudo -S apt -y install atom

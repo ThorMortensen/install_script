@@ -1,0 +1,9 @@
+#!/bin/bash
+
+
+#wget http://download.netbeans.org/netbeans/8.2/final/bundles/netbeans-8.2-javase-linux.sh
+#chmod +x netbeans-8.2-javase-linux.sh
+#./netbeans-8.2-javase-linux.sh
+rm netbeans-8.2-javase-linux.sh
+sed -e '/netbeans_jdkhome=/s/^/#/g' -i ~/netbeans-8.2/etc/netbeans.conf
+

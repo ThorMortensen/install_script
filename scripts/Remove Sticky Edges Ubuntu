@@ -1,0 +1,4 @@
+#!/bin/bash
+
+
+dconf write /org/compiz/profiles/unity/plugins/unityshell/launcher-capture-mouse false
