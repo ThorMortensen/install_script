@@ -208,8 +208,6 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
 
   class ScriptReadHelpTask extends SwingWorker<Void, Void> {
 
-    Process scriptProcess;
-
     public ScriptReadHelpTask() {
     }
 
@@ -218,59 +216,66 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
 //      gotCanceled = true;
 //      cancel(mayInterruptIfRunning);
 //    }
+    boolean readDescription(CheckboxListItem scriptToCheck) {
+
+      Process scriptProcess;
+      try {
+        ProcessBuilder builder = new ProcessBuilder();
+        builder.command(scriptToCheck.getRunablePath(), "-h");
+        scriptProcess = builder.start();
+        StreamGobbler streamGobbler = new StreamGobbler(scriptProcess.getInputStream(), (x) -> scriptToCheck.setToolTip(x));
+        Executors.newSingleThreadExecutor().submit(streamGobbler);
+//        scriptProcess.
+        Thread.sleep(1);
+        int exitCode = scriptProcess.waitFor();
+        scriptProcess.destroy();
+      } catch (IOException | InterruptedException ex) {
+        System.out.println("Failed to read -h from script");
+        return false;
+      }
+      return true;
+    }
+
+    boolean hasDescritopn(CheckboxListItem scriptToCheck) {
+      File file = new File(scriptToCheck.getRunablePath());
+
+      try {
+        Scanner scanner = new Scanner(file);
+        if (!scanner.hasNextLine()) {
+          return false;
+        }
+        scanner.nextLine();
+        while (scanner.hasNextLine()) {
+          String line = scanner.nextLine();
+          if (line.isEmpty() || line.startsWith("#")) {
+            continue;
+          }
+          if (line.contains("if [ \"$1\" == \"-h\" ]")) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      } catch (FileNotFoundException e) {
+
+      }
+
+      return false;
+    }
 
     /*
          * Main task. Executed in background thread.
      */
     @Override
     public Void doInBackground() {
-//      double taskPercent = 100 / selectedScriptsCount;
-//      int progressPercent = 0;
-//      setProgress(progressPercent);
 
       for (int i = 0; i < componentList.getModel().getSize(); i++) {
-
-        currentScript = componentList.getModel().getElementAt(i);
-        File file = new File(currentScript.getRunablePath());
-
-        try {
-          System.out.println("Checking file " + currentScript.toString());
-
-          Scanner scanner = new Scanner(file);
-          if (!scanner.hasNextLine()) {
-            continue;
-          }
-          scanner.nextLine();
-          while (scanner.hasNextLine()) {
-            String line = scanner.nextLine();
-            if (line.isEmpty() || line.startsWith("#")) {
-              continue;
-            }
-            if (line.contains("if [ \"$1\" == \"-h\" ]")) {
-              System.out.println(currentScript.toString() + " has a description++");
-              try {
-                ProcessBuilder builder = new ProcessBuilder();
-                builder.command(currentScript.getRunablePath(), "-h");
-                scriptProcess = builder.start();
-                StreamGobbler streamGobbler = new StreamGobbler(scriptProcess.getInputStream(), (x) -> currentScript.setToolTip(x));
-                Executors.newSingleThreadExecutor().submit(streamGobbler);
-                scriptProcess.waitFor();
-                scriptProcess.destroy();
-              } catch (IOException | InterruptedException ex) {
-                System.out.println("Failed to read -h from script");
-              }
-              break;
-            } else {
-              throw new FileNotFoundException();
-            }
-          }
-        } catch (FileNotFoundException e) {
+        CheckboxListItem scriptToCheck = componentList.getModel().getElementAt(i);
+        if (hasDescritopn(scriptToCheck)) {
+          readDescription(scriptToCheck);
+        } else {
+          scriptToCheck.setToolTip("No description");
         }
-
-//        if (currentScript.getToolTip().isEmpty()) {
-//          currentScript.setToolTip("No description");
-//          System.out.println(currentScript.toString() + " has no description");
-//        }
       }
 
       return null;
@@ -744,7 +749,9 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
    */
   public static void main(String args[]) throws UnsupportedEncodingException {
 
-    basePath = new File("").getAbsolutePath() + "/";
+//    basePath = "../"; // To run from IDE 
+    basePath = new File("").getAbsolutePath() + "/"; // To run from "run" script
+
 //     System.out.println(basePath);
 ////    basePath = "/";
 //

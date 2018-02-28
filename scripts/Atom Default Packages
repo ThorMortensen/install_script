@@ -1,4 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 
+if [ "$1" == "-h" ]; then
+  echo "Installs sync-settings. Will install rest when syncing"
+  exit 0
+fi
 
-Sublime Style Column Selection
+apm install sync-settings
