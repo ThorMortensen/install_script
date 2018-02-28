@@ -1,3 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
-echo $3 | sudo -S apt -y install build-essential git
+
+echo $3 | sudo -S apt -y install build-essential git ruby

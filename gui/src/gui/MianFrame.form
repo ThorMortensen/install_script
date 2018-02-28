@@ -148,7 +148,7 @@
             <Component class="javax.swing.JLabel" name="jLabel3">
               <Properties>
                 <Property name="horizontalAlignment" type="int" value="0"/>
-                <Property name="text" type="java.lang.String" value="Select components to install"/>
+                <Property name="text" type="java.lang.String" value="Select components to install (hover to see details)"/>
               </Properties>
             </Component>
             <Component class="javax.swing.JButton" name="jButtonSelectAll">

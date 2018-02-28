@@ -15,6 +15,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -24,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Scanner;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -61,7 +63,7 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
 
   List<Path> logoList = null;
   JList<CheckboxListItem> scriptList;
-  Task task;
+  ExecuteScriptTask task;
   boolean isDone = false;
   private int scriptCompleated;
 
@@ -122,13 +124,13 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
     }
   }
 
-  class Task extends SwingWorker<Void, Void> {
+  class ExecuteScriptTask extends SwingWorker<Void, Void> {
 
     MianFrame mother;
     boolean gotCanceled = false;
     Process scriptProcess;
 
-    public Task(MianFrame mother) {
+    public ExecuteScriptTask(MianFrame mother) {
       this.mother = mother;
     }
 
@@ -153,12 +155,13 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
           }
           ProcessBuilder builder = new ProcessBuilder();
           currentScript = componentList.getModel().getElementAt(i);
-          builder.command(basePath + "resources/worker_scripts/script_entry_point", currentScript.script.toString(), username, password);
+          builder.command(basePath + "resources/worker_scripts/script_entry_point", currentScript.getRunablePath(), username, password);
           scriptProcess = builder.start();
           StreamGobbler streamGobbler = new StreamGobbler(scriptProcess.getInputStream(), (x) -> taskOutput.append(x + "\n"));
           Executors.newSingleThreadExecutor().submit(streamGobbler);
+          setProgress(progressPercent);
           int exitCode = scriptProcess.waitFor();
-          taskOutput.append("Exit code: " + exitCode);
+          taskOutput.append("Exit code: " + exitCode + "\n");
           scriptProcess.destroy();
           progressPercent += Math.round(taskPercent);
           setProgress(progressPercent);
@@ -203,6 +206,85 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
     }
   }
 
+  class ScriptReadHelpTask extends SwingWorker<Void, Void> {
+
+    Process scriptProcess;
+
+    public ScriptReadHelpTask() {
+    }
+
+////    public b cancel
+//    public void mycancel(boolean mayInterruptIfRunning) {
+//      gotCanceled = true;
+//      cancel(mayInterruptIfRunning);
+//    }
+
+    /*
+         * Main task. Executed in background thread.
+     */
+    @Override
+    public Void doInBackground() {
+//      double taskPercent = 100 / selectedScriptsCount;
+//      int progressPercent = 0;
+//      setProgress(progressPercent);
+
+      for (int i = 0; i < componentList.getModel().getSize(); i++) {
+
+        currentScript = componentList.getModel().getElementAt(i);
+        File file = new File(currentScript.getRunablePath());
+
+        try {
+          System.out.println("Checking file " + currentScript.toString());
+
+          Scanner scanner = new Scanner(file);
+          if (!scanner.hasNextLine()) {
+            continue;
+          }
+          scanner.nextLine();
+          while (scanner.hasNextLine()) {
+            String line = scanner.nextLine();
+            if (line.isEmpty() || line.startsWith("#")) {
+              continue;
+            }
+            if (line.contains("if [ \"$1\" == \"-h\" ]")) {
+              System.out.println(currentScript.toString() + " has a description++");
+              try {
+                ProcessBuilder builder = new ProcessBuilder();
+                builder.command(currentScript.getRunablePath(), "-h");
+                scriptProcess = builder.start();
+                StreamGobbler streamGobbler = new StreamGobbler(scriptProcess.getInputStream(), (x) -> currentScript.setToolTip(x));
+                Executors.newSingleThreadExecutor().submit(streamGobbler);
+                scriptProcess.waitFor();
+                scriptProcess.destroy();
+              } catch (IOException | InterruptedException ex) {
+                System.out.println("Failed to read -h from script");
+              }
+              break;
+            } else {
+              throw new FileNotFoundException();
+            }
+          }
+        } catch (FileNotFoundException e) {
+        }
+
+//        if (currentScript.getToolTip().isEmpty()) {
+//          currentScript.setToolTip("No description");
+//          System.out.println(currentScript.toString() + " has no description");
+//        }
+      }
+
+      return null;
+    }
+
+    /*
+         * Executed in event dispatching thread
+     */
+    @Override
+    public void done() {
+
+    }
+  }
+
   /**
    * Creates new form mianFrame
    */
@@ -214,6 +296,8 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
     welcomeNameTexField.getDocument().addDocumentListener(new WelcomeDocumentListener());
     welcomePasswordField.getDocument().addDocumentListener(new WelcomeDocumentListener());
     componentList = getCheckboxScriptList();
+    ScriptReadHelpTask setTooltipTask = new ScriptReadHelpTask();
+    setTooltipTask.execute();
     jScrollPane1.setViewportView(componentList);
     cl = (java.awt.CardLayout) jPanelCard.getLayout();
     cl.next(jPanelCard);
@@ -240,14 +324,38 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
               collect(Collectors.toList());
       scripts = new CheckboxListItem[scriptPathList.size()];
       int i = 0;
+      CheckboxListItem itemTemp;
       for (Path s : scriptPathList) {
-        scripts[i++] = (new CheckboxListItem(s));
+        CheckboxListItem item = new CheckboxListItem(s);
+        if (item.toString().equalsIgnoreCase("update")) {
+          itemTemp = scripts[0];
+          scripts[0] = item;
+          scripts[i++] = itemTemp;
+        } else if (item.toString().equalsIgnoreCase("Dev essentials")) {
+          itemTemp = scripts[1];
+          scripts[1] = item;
+          scripts[i++] = itemTemp;
+        } else {
+          scripts[i++] = item;
+        }
       }
     } catch (IOException ex) {
     }
-    scriptList = new JList<CheckboxListItem>(scripts);
-//    logoLabel.setIcon(new ImageIcon("resources/defaults/default.png"));
+    scriptList = new JList<CheckboxListItem>(scripts) {
+      // This method is called as the cursor moves within the list.
+      public String getToolTipText(MouseEvent evt) {
+        // Get item index
+        int index = locationToIndex(evt.getPoint());
 
+        // Get item
+        CheckboxListItem item = getModel().getElementAt(index);
+
+        // Return the tool tip text
+        return item.getToolTip();
+      }
+    };
+
+//    logoLabel.setIcon(new ImageIcon("resources/defaults/default.png"));
     // Use a CheckboxListRenderer (see below)
     // to renderer list cells
     scriptList.setCellRenderer(new CheckboxListRenderer());
@@ -320,7 +428,7 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
     jScrollPane1.setViewportView(jList1);
 
     jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-    jLabel3.setText("Select components to install");
+    jLabel3.setText("Select components to install (hover to see details)");
 
     jButtonSelectAll.setText("Select All");
     jButtonSelectAll.addActionListener(new java.awt.event.ActionListener() {
@@ -578,7 +686,7 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
 
   private void jButtonDoItActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonDoItActionPerformed
     progressBar.setValue(0);
-    task = new Task(this);
+    task = new ExecuteScriptTask(this);
     task.addPropertyChangeListener(this);
     task.execute();
     cl.next(jPanelCard);
@@ -706,11 +814,25 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
 
     private boolean isSelected = false;
     private Path script;
-//    public static int selectedCount = 0;
+    private String description;
 
-    public CheckboxListItem(Path label) {
-      this.script = label;
+//    public static int selectedCount = 0;
+    public CheckboxListItem(Path path) {
+      this.script = path;
       setSelected(true);
+
+//      try {
+//        Process scriptProcess;
+//        ProcessBuilder builder = new ProcessBuilder();
+//        builder.command(path.toString(), "-h");
+//        scriptProcess = builder.start();
+//        StreamGobbler streamGobbler = new StreamGobbler(scriptProcess.getInputStream(), (x) -> description = x);
+//        Executors.newSingleThreadExecutor().submit(streamGobbler);
+//        int exitCode = scriptProcess.waitFor();
+//        scriptProcess.destroy();
+//      } catch (IOException | InterruptedException ex) {
+//        System.out.println("Failed to get script description");
+//      }
     }
 
     public boolean isSelected() {
@@ -720,6 +842,19 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
     public void setSelected(boolean isSelected) {
       this.isSelected = isSelected;
       selectedScriptsCount += isSelected ? 1 : - 1;
+    }
+
+    public String getToolTip() {
+      return description;
+    }
+
+    public void setToolTip(String tt) {
+      System.out.println("Setting tt --> " + tt);
+      description = tt;
+    }
+
+    public String getRunablePath() {
+      return script.toString();//.replace(" ", "\\ ");
     }
 
     public String toString() {

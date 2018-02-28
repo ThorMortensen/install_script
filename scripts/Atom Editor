@@ -1,1 +1,8 @@
-#!/bin/sh
+#!/bin/bash
+
+if [ "$1" == "-h" ]; then
+  echo "This will install Atom text edditor and nothing else"
+  exit 0
+fi
+
+echo $3 | sudo -S apt -y install atom
