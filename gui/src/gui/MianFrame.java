@@ -201,6 +201,13 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
               options,
               options[1]);
       if (n != 0) {
+        File downloadDir = new File(basePath + "resources/downloads/");
+        for (File file : downloadDir.listFiles()) {
+          if (!"do_not_delete".equals(file.getName())) {
+            System.out.println("Deliting file: " + file.getName());
+            file.delete();
+          }
+        }
         mother.dispatchEvent(new WindowEvent(mother, WindowEvent.WINDOW_CLOSING));
       }
     }

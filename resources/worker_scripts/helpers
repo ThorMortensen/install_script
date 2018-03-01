@@ -1,0 +1,30 @@
+
+
+#wget -nv "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb" -P ~/install_script/resources/downloads/
+
+DOWNLOAD_PATH=~/install_script/resources/downloads/
+
+wget_forInstaller(){
+  echo "Please wait downloading from " $1
+  wget -nv $1 -P $DOWNLOAD_PATH
+}
+
+install_deb(){
+  echo "Installing package "  $1
+  echo $2 | sudo -S dpkg -i $DOWNLOAD_PATH$1
+}
+
+install_deb_software_center(){
+  echo "Installing package with software center"  $1
+  gnome-software --local-filename=$DOWNLOAD_PATH$1
+}
+
+
+remove_download(){
+  echo "Removing " $1
+  rm $DOWNLOAD_PATH$1
+}
+
+make_download_executable(){
+  chmod +x $DOWNLOAD_PATH$1
+}

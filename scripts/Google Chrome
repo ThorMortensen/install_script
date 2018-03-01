@@ -1,8 +1,9 @@
 #!/bin/bash
 
+. resources/worker_scripts/helpers
 
-wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb #-P ../resources/downloads/
+wget_forInstaller https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+install_deb_software_center google-chrome-stable_current_amd64.deb $3
 
-echo "All done"
 
-
+echo "Chrome installer done"

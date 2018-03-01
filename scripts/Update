@@ -2,10 +2,10 @@
 
 
 
-echo "Hello from Update script"
-
-echo $3 | sudo -S apt -y update
-echo $3 | sudo -S apt -y upgrade
+# echo "Hello from Update script"
+#
+# echo $3 | sudo -S apt -y update
+# echo $3 | sudo -S apt -y upgrade
 # sudo apt update
 # sudo
 

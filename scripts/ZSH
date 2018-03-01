@@ -1,0 +1,35 @@
+#!/bin/bash
+
+if [ "$1" == "-h" ]; then
+  echo "Installs ZSH ~> YOU NEED TO RUN THIS FROM TERMINAL AFTERWARDS TO SET ZSH AS DEFAULT!!"
+  exit 0
+fi
+
+if [ $# -eq 0 ]; then
+  echo "This will set ZSH as the default terminal"
+  echo "(Make sure you ZSH is installed)"
+  echo "Log out before changes takes effect"
+  chsh -s $(which zsh)
+  exit 1
+fi
+
+. resources/worker_scripts/helpers
+
+echo $3 | sudo -S apt -y install zsh curl fonts-powerline
+sh -c "$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
+# git clone https://github.com/bhilburn/powerlevel9k.git ~/.oh-my-zsh/custom/themes/powerlevel9k
+# git clone https://github.com/gabrielelana/awesome-terminal-fonts.git $DOWNLOAD_PATH"awesome-terminal-fonts"
+# cd $DOWNLOAD_PATH"awesome-terminal-fonts/build"
+# mkdir ~/.fonts
+# cp *.* ~/.fonts
+# fc-cache -fv ~/.fonts
+# echo $3 | sudo -S fc-cache -fv ~/.fonts
+# cd ../config
+# sed -i -- 's/PragmataPro/FontAwesome/g' 10-symbols.conf
+# mkdir -p ~/.config/fontconfig/conf.d
+# cp 10-symbols.conf ~/.config/fontconfig/conf.d/
+#
+# echo "ADD: powerlevel9k/powerlevel9k TO ZSH_THEME IN .zshrc"
+# echo "ADD: POWERLEVEL9K_MODE='awesome-fontconfig' BEFORE ZSH_THEME IN .zshrc"
+
+git clone https://github.com/zsh-users/zsh-autosuggestions ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions
