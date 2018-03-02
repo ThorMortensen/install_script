@@ -1,0 +1,46 @@
+#!/bin/bash
+
+if [ "$1" == "-h" ]; then
+  echo "Modelsim starter edition"
+  exit 0
+fi
+
+##### Change this if version in archive change
+MODELSIM_NAME="ModelSimProSetup-17.1.0.240-linux.run"
+
+. resources/worker_scripts/helpers
+
+#### Install ModelSim
+$ARCHIVE_PATH$MODELSIM_NAME
+
+MODELSIM_PATH=$(dirname $(find ~/intelFPGA_pro/*/modelsim_ase/bin/ -name "vsim"))/
+
+### Adding paths
+echo "Adding to path $MODELSIM_PATH"
+echo "PATH=\$PATH:$MODELSIM_PATH" >> ~/.bashrc
+if [ -f ~/.zshrc ]; then
+    echo "Using ZSH ... added to .zshrc"
+    echo "PATH=\$PATH:$MODELSIM_PATH" >> ~/.zshrc
+fi
+
+### Install dependencies
+echo $3 | sudo -S dpkg --add-architecture i386
+echo $3 | sudo -S apt -y update
+echo $3 | sudo -S apt -y install libxft2:i386 libxext6:i386 libncurses5:i386
+echo $3 | sudo -S dpkg -i $ARCHIVE_PATH"libpng12-0_1.2.54-1ubuntu1_i386.deb"
+
+#### Install freetype
+FREETYPE_PATH=$(dirname ~/intelFPGA_pro/*/modelsim_ase/readme.txt)/lib32
+mkdir $FREETYPE_PATH
+cp $ARCHIVE_PATH"libfreetype/usr/lib/i386-linux-gnu/libfreetype.so.6"* $FREETYPE_PATH
+
+
+
+#### Cahnge vsim file to so we can run modelsim
+echo $MODELSIM_PATH"vsim"
+echo $3 | sudo -S sed -i -e 's/linux_rh60/linux/g' $MODELSIM_PATH"vsim"
+echo $3 | sudo -S sed -i -e 's/MTI_VCO_MODE:-""/MTI_VCO_MODE:-"32"/g' $MODELSIM_PATH"vsim"
+echo $3 | sudo -S sed -i -e 's/dir=`dirname "$arg0"`/dir=`dirname "$arg0"`\nexport LD_LIBRARY_PATH=${dir}\/lib32/g' $MODELSIM_PATH"vsim"
+
+#### Make link
+ln -s $(dirname ~/intelFPGA_pro/*/modelsim_ase/readme.txt)/linuxaloem $MODELSIM_PATH"linux"

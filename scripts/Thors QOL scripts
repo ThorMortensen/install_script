@@ -2,5 +2,5 @@
 
 git clone https://github.com/ThorMortensen/scripts.git ~/scripts
 echo "####### To source QOL scripts ######" >> ~/.bashrc
-echo "PATH=$PATH:~/scripts/" >> ~/.bashrc
+echo "PATH=\$PATH:~/scripts/" >> ~/.bashrc
 echo ". ~/scripts/bashrc_stuff " >> ~/.bashrc

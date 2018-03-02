@@ -1,9 +1,12 @@
 #!/bin/bash
 
+if [ "$1" == "-h" ]; then
+  echo "Googel Chrome web-browser"
+  exit 0
+fi
+
+
 . resources/worker_scripts/helpers
 
 wget_forInstaller https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
 install_deb_software_center google-chrome-stable_current_amd64.deb $3
-
-
-echo "Chrome installer done"

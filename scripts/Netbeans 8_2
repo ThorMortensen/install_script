@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ "$1" == "-h" ]; then
+  echo "Follow the instructions. Don’t close the installer util netbeans is finished. Java dependencies will be handled just click exit"
+  exit 0
+fi
+
 . resources/worker_scripts/helpers
 
 wget_forInstaller http://download.netbeans.org/netbeans/8.2/final/bundles/netbeans-8.2-javase-linux.sh
