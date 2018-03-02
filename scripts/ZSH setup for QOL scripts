@@ -1,13 +1,17 @@
 #!/bin/bash
 
-sed -e '/ZSH_THEME=/s/^/#/g' -i ~/.zshrc
-sed -e '/plugins=(/s/^/#/g' -i ~/.zshrc
-sed -e '/  git/s/^/#/g' -i ~/.zshrc
-sed -e '/)/s/^/#/g' -i ~/.zshrc
-sed -e '/source $ZSH\/oh-my-zsh.sh/s/^/#/g' -i ~/.zshrc
+# sed -e '/ZSH_THEME=/s/^/#/g' -i ~/.zshrc
+# sed -e '/plugins=(/s/^/#/g' -i ~/.zshrc
+# sed -e '/  git/s/^/#/g' -i ~/.zshrc
+# sed -e '/)/s/^/#/g' -i ~/.zshrc
+# sed -e '/source $ZSH\/oh-my-zsh.sh/s/^/#/g' -i ~/.zshrc
+#
+# echo "####### To source QOL scripts ######" >> ~/.zshrc
+# echo "source ~/scripts/zshrc_stuff" >> ~/.zshrc
+# echo "source \$ZSH/oh-my-zsh.sh" >> ~/.zshrc
+# echo "PATH=\$PATH:~/scripts/" >> ~/.zshrc
+# echo "source ~/.fonts/*.sh" >> ~/.zshrc
 
-echo "####### To source QOL scripts ######" >> ~/.zshrc
-echo "source ~/scripts/zshrc_stuff" >> ~/.zshrc
-echo "source \$ZSH/oh-my-zsh.sh" >> ~/.zshrc
-echo "PATH=\$PATH:~/scripts/" >> ~/.zshrc
-echo "source ~/.fonts/*.sh" >> ~/.zshrc
+
+echo "setup here"
+sleep 1

@@ -115,11 +115,11 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
       if (task.isCancelled()) {
 
       } else {
-        taskOutput.append(String.format(
-                "\n(%02d/%02d) Starting task ~> %s.\n\n",
-                scriptCompleated,
-                selectedScriptsCount,
-                currentScript.toString()));
+//        taskOutput.append(String.format(
+//                "\n(%02d/%02d) Starting task ~> %s.\n\n",
+//                scriptCompleated,
+//                selectedScriptsCount,
+//                currentScript.toString()));
       }
     }
   }
@@ -147,6 +147,7 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
     public Void doInBackground() {
       double taskPercent = 100 / selectedScriptsCount;
       int progressPercent = 0;
+      scriptCompleated = 0;
       setProgress(progressPercent);
       for (int i = 0; i < componentList.getModel().getSize(); i++) {
         try {
@@ -157,11 +158,16 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
           currentScript = componentList.getModel().getElementAt(i);
           builder.command(basePath + "resources/worker_scripts/script_entry_point", currentScript.getRunablePath(), username, password);
           scriptProcess = builder.start();
+          taskOutput.append(String.format(
+                  "\n(%02d/%02d) Starting task ~> %s.\n\n",
+                  ++scriptCompleated,
+                  selectedScriptsCount,
+                  currentScript.toString()));
           StreamGobbler streamGobbler = new StreamGobbler(scriptProcess.getInputStream(), (x) -> taskOutput.append(x + "\n"));
           Executors.newSingleThreadExecutor().submit(streamGobbler);
           setProgress(progressPercent);
           int exitCode = scriptProcess.waitFor();
-          taskOutput.append("Exit code: " + exitCode + "\n");
+          taskOutput.append("\nExit code: " + exitCode + "\n");
           scriptProcess.destroy();
           progressPercent += Math.round(taskPercent);
           setProgress(progressPercent);

@@ -1,33 +1,8 @@
 #!/bin/bash
 
 
-echo "Running entry point"
 
-# sleep 1
-echo $1 #>> log
-# sleep 1
-echo $2 #>> log
-# sleep 1
-echo $3 #>> log
-# sleep 1
-
-foo=/home/thor/install_script/scripts/Atom\ Editor
-#
-#
 . "$1"
-# . "$foo"
+
 # x-terminal-emulator -x sh /home/thor/install_script/scripts/Update
 # gnome-terminal -x /home/thor/install_script/scripts/Update
-
-# '$2' '$3'
-
-# # echo $0 #>> log
-
-# echo "end" #>> log
-
-
-# while true; do
-#   wait 1000
-#   echo "hello world"
-# done
-#   #statements
