@@ -1,0 +1,29 @@
+#!/bin/bash
+
+if [ "$1" == "-h" ]; then
+  echo "Xillinx ISE 14.2"
+  exit 0
+fi
+
+
+. resources/worker_scripts/helpers
+
+##### Change this if version in archive change
+XILLINX_INSTALLER_PATH="archive/Xilinx_ISE_DS_Lin_14.2_P.28xd.3.0/xsetup"
+
+
+echo $3 | sudo -S $XILLINX_INSTALLER_PATH
+
+
+### Adding paths
+echo "Adding to path Xillinx paths"
+echo "PATH=\$PATH:/opt/Xilinx/14.2/ISE_DS/ISE/bin/lin64/" >> ~/.bashrc
+echo "PATH=\$PATH:/opt/Xilinx/current/ISE_DS/ISE/bin/lin64" >> ~/.bashrc
+if [ -f ~/.zshrc ]; then
+    echo "Using ZSH ... added to .zshrc"
+    echo "PATH=\$PATH:/opt/Xilinx/14.2/ISE_DS/ISE/bin/lin64/" >> ~/.zshrc
+    echo "PATH=\$PATH:/opt/Xilinx/current/ISE_DS/ISE/bin/lin64/" >> ~/.zshrc
+fi
+
+
+# wget_forInstaller http://download.altera.com/akdlm/software/acdsinst/17.1/240/ib_installers/ModelSimProSetup-17.1.0.240-linux.run

@@ -1,0 +1,49 @@
+#!/bin/bash
+
+
+
+echo $3 | sudo -S apt -y install subversion ant
+# Check if workspace folder exists in user home directory
+if [ ! -d ~/workspace ]; then
+    mkdir ~/workspace
+fi
+
+# SVN checkout of SAS & SCOE
+svn co svn://ganymede/SAS/223_EMBEDDED/trunk ~/workspace/223_EMBEDDED
+svn co svn://ganymede/SAS/223_GENERIC/trunk ~/workspace/223_GENERIC
+svn co svn://ganymede/SAS/223_SAS/trunk ~/workspace/223_SAS
+svn co svn://ganymede/601_SCOE_CONTROLLER/CONTROLLER/trunk ~/workspace/CONTOLLER
+svn co svn://ganymede/601_SCOE_CONTROLLER/HAL/trunk ~/workspace/HAL
+
+
+# ---- Generate links and folder structure for jenkins ----
+
+
+# ---- Symlinks for 223_EMBEDDED/SAS ----
+ln -s ~/workspace/223_EMBEDDED/os/toolchain/sparc-linux-3.4.4 /opt/sparc-linux-3.4.4
+
+
+echo $3 | sudo -S mkdir /var/lib/jenkins/workspace -p
+echo $3 | sudo -S chmod a+rw /var/lib/jenkins/workspace
+
+echo $3 | sudo -S ln -s ~/workspace /var/lib/jenkins/workspace/223_SAS_and_GENERIC
+echo $3 | sudo -S ln -s ~/workspace /var/lib/jenkins/workspace/223_FW_SW_BUILD
+echo $3 | sudo -S ln -s /var/lib/jenkins/workspace /var/lib/jenkins/workspace-integrated
+
+ln -s ~/workspace/223_EMBEDDED ~/workspace/223_EMBEDDED/trunk
+
+
+
+
+### Adding paths
+echo "Adding Rovsing build paths"
+# echo "PATH=\$PATH:~/workspace/223_EMBEDDED/deployScripts" >> ~/.bashrc
+echo "PATH=\$PATH:/opt/sparc-linux-3.4.4/bin/" >> ~/.bashrc
+if [ -f ~/.zshrc ]; then
+    echo "Using ZSH ... added to .zshrc"
+    # echo "PATH=\$PATH:~/workspace/223_EMBEDDED/deployScripts" >> ~/.zshrc
+    echo "PATH=\$PATH:/opt/sparc-linux-3.4.4/bin/" >> ~/.zshrc
+fi
+
+
+echo $3 | sudo -S ln -s ~/workspace/223_EMBEDDED/os/toolchain/sparc-linux-3.4.4 /opt
