@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ "$1" == "-h" ]; then
+  echo "Add source for QOL scripts to the \"rc\" files"
+  exit 0
+fi
+
 sed -e '/ZSH_THEME=/s/^/#/g' -i ~/.zshrc
 sed -e '/plugins=(/s/^/#/g' -i ~/.zshrc
 sed -e '/  git/s/^/#/g' -i ~/.zshrc

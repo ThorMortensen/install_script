@@ -1,4 +1,9 @@
 #!/bin/bash
 
+if [ "$1" == "-h" ]; then
+  echo "Is needed when working at a multi screen setup"
+  exit 0
+fi
+
 
 dconf write /org/compiz/profiles/unity/plugins/unityshell/launcher-capture-mouse false

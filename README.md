@@ -78,3 +78,10 @@ $DOWNLOAD_PATH
 ```
 
 But remember files here will be deleted :-)
+
+
+For `sudo` commands use the following to pass password to sudo
+
+```
+echo $3 | sudo -S <commadn here>
+```

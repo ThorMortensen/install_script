@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ "$1" == "-h" ]; then
+  echo "Installs Thor's (THM) quality of life scripts. To call them type +<double tab>"
+  exit 0
+fi
+
 git clone https://github.com/ThorMortensen/scripts.git ~/scripts
 echo "####### To source QOL scripts ######" >> ~/.bashrc
 echo "PATH=\$PATH:~/scripts/" >> ~/.bashrc

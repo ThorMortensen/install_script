@@ -1,0 +1,27 @@
+#!/bin/bash
+
+
+if [ "$1" == "-h" ]; then
+  echo "Setup IP's for the device network. Change the assigned IP in the script. Restart to take effect"
+  exit 0
+fi
+
+THIS_DEVICE_NETWORK_IP="192.168.255.232"
+
+ETHERNET_ADAPTER=$(ip route | grep default | sed -e "s/^.*dev.//" -e "s/.proto.*//")
+ETHERNET_ADAPTER="${ETHERNET_ADAPTER%% }"
+NEW_ETHERNET_ADAPTER=$ETHERNET_ADAPTER':0'
+
+echo "Ethernet adapter is --> "$ETHERNET_ADAPTER
+
+echo $3 | sudo -S bash -c 'echo "
+##### Rovsing network stuff ####
+auto '"$ETHERNET_ADAPTER"'
+iface '"$ETHERNET_ADAPTER"' inet dhcp
+
+auto '"$NEW_ETHERNET_ADAPTER"'
+iface '"$NEW_ETHERNET_ADAPTER"' inet static
+address '"$THIS_DEVICE_NETWORK_IP"'
+netmask 255.255.0.0
+gateway 192.168.255.1
+" >> /etc/network/interfaces'

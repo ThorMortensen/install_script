@@ -1,6 +1,9 @@
 #!/bin/bash
 
-
+if [ "$1" == "-h" ]; then
+  echo "Add Rovsing's Xillinx licence exports to the \"rc\" files"
+  exit 0
+fi
 
 ######## Build stuff #####
 ### Adding paths
