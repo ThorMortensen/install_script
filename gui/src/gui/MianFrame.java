@@ -350,8 +350,8 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
           scripts[0] = item;
           scripts[i++] = itemTemp;
         } else if (item.toString().equalsIgnoreCase("Dev essentials")) {
-          itemTemp = scripts[1];
-          scripts[1] = item;
+          itemTemp = scripts[0];
+          scripts[0] = item;
           scripts[i++] = itemTemp;
         } else {
           scripts[i++] = item;
@@ -869,7 +869,7 @@ public class MianFrame extends javax.swing.JFrame implements PropertyChangeListe
     }
 
     public void setToolTip(String tt) {
-      System.out.println("Setting tt --> " + tt);
+//      System.out.println("Setting tt --> " + tt);
       description = tt;
     }
 

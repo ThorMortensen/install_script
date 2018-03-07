@@ -1,0 +1,66 @@
+#!/bin/bash
+
+if [ "$1" == "-h" ]; then
+  echo "Add Rovsing's Xillinx licence exports to the \"rc\" files and setting local flash Scripts"
+  exit 0
+fi
+
+
+### Adding paths
+echo "Adding Rovsing licence file on server"
+echo "export XILINXD_LICENSE_FILE=2100@10.0.100.44" >> ~/.bashrc
+echo "export LM_LICENSE_FILE=2100@10.0.100.44" >> ~/.bashrc
+if [ -f ~/.zshrc ]; then
+    echo "Using ZSH ... added to .zshrc"
+    echo "export XILINXD_LICENSE_FILE=2100@10.0.100.44" >> ~/.zshrc
+    echo "export LM_LICENSE_FILE=2100@10.0.100.44" >> ~/.zshrc
+fi
+
+echo $3 | sudo -S ln -s /opt/Xilinx/14.2 /opt/Xilinx/current
+
+
+
+## Adding flash local stuff
+echo "PATH=\$PATH:/opt/Xilinx/14.2/ISE_DS/ISE/bin/lin64/" >> ~/.bashrc
+echo "alias flashLocal='export LD_PRELOAD=/opt/Xilinx/usb-driver/libusb-driver.so && impact -batch ~/.impactLocal.cmds'" >> ~/.bashrc
+if [ -f ~/.zshrc ]; then
+    echo "Using ZSH ... added to .zshrc"
+    echo "PATH=\$PATH:/opt/Xilinx/14.2/ISE_DS/ISE/bin/lin64/" >> ~/.zshrc
+    echo "alias flashLocal='export LD_PRELOAD=/opt/Xilinx/usb-driver/libusb-driver.so && impact -batch ~/.impactLocal.cmds'" >> ~/.zshrc
+fi
+
+
+
+echo "setMode -bs
+setMode -bs
+setMode -bs
+setMode -bs
+setCable -port auto
+Identify -inferir
+identifyMPM
+assignFile -p 1 -file \"masc.mcs\"
+setAttribute -position 1 -attr packageName -value \"\"
+Program -p 1 -e -v -r -loadfpga -defaultVersion 0
+setMode -bs
+setMode -bs
+setMode -ss
+setMode -sm
+setMode -hw140
+setMode -spi
+setMode -acecf
+setMode -acempm
+setMode -pff
+setMode -bs
+setMode -bs
+deleteDevice -position 1
+deleteDevice -position 1
+setMode -bs
+setMode -ss
+setMode -sm
+setMode -hw140
+setMode -spi
+setMode -acecf
+setMode -acempm
+setMode -pff
+exits
+" > ~/.impactLocal.cmds

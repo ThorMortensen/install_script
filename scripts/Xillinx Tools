@@ -26,4 +26,12 @@ if [ -f ~/.zshrc ]; then
 fi
 
 
-# wget_forInstaller http://download.altera.com/akdlm/software/acdsinst/17.1/240/ib_installers/ModelSimProSetup-17.1.0.240-linux.run
+
+#####  Installs cable drivers
+echo $3 | sudo -S apt -y install libusb-dev libc6-dev fxload
+cd /opt/Xilinx
+echo $3 | sudo -S git clone git://git.zerfleddert.de/usb-driver
+cd usb-driver
+echo $3 | sudo -S make
+echo $3 | sudo ./setup_pcusb /opt/Xilinx/14.2/ISE_DS/ISE/
+# echo $3 | sudo -S /opt/Xilinx/14.2/ISE_DS/ISE/bin/lin64/install_script/install_drivers/install_drivers

@@ -1,9 +1,9 @@
 #!/bin/bash
 
 if [ "$1" == "-h" ]; then
-  echo "Installs ~> build-essential, git, ruby"
+  echo "Installs ~> build-essential, git, ruby, sshfs, expect"
   exit 0
 fi
 
 
-echo $3 | sudo -S apt -y install build-essential git ruby
+echo $3 | sudo -S apt -y install build-essential git ruby sshfs expect
