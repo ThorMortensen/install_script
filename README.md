@@ -12,6 +12,9 @@ As of now it is not completely automated and actions may still be required from 
 
 ## How To Use
 
+[Alt Text](resources/readme_res/start.png)
+
+
 It is assumed that everything is installed at default locations
 
 ## Customization
