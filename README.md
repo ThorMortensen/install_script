@@ -6,8 +6,8 @@ As of now it is not completely automated and actions may still be required from 
 
 
 #### Supported Distros
-* Ubuntu
-* Open SUSE (work in  progress)
+- [x] Ubuntu
+- [ ] Open SUSE (work in  progress)
 
 
 ## How To Use
@@ -138,3 +138,8 @@ echo $3 | sudo -S <commadn here>
 ```
 
 If you have something used by many deifferent install scripts place it in the `resources/worker_scripts/helpers` folder and source it from there (just like the `helpers` script). If you place it in the script folder it will show up as a component in the GUI.
+
+If you need to `echo` into a file with `sudo` do this:
+```
+echo $3 | sudo -S bash -c 'echo "text to write with '"$VARIABLE_FROM_SCRIPT"'" >> file/path'
+```
