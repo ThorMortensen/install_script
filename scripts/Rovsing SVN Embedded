@@ -15,6 +15,7 @@ fi
 svn co svn://ganymede/SAS/223_EMBEDDED/trunk ~/workspace/223_EMBEDDED
 svn co svn://ganymede/SAS/223_GENERIC/trunk ~/workspace/223_GENERIC
 svn co svn://ganymede/SAS/223_SAS/trunk ~/workspace/223_SAS
+svn co svn://ganymede/223_SAS_IMAGES ~/workspace/223_SAS_IMAGES
 svn co svn://ganymede/601_SCOE_CONTROLLER/CONTROLLER/trunk ~/workspace/CONTOLLER
 svn co svn://ganymede/601_SCOE_CONTROLLER/HAL/trunk ~/workspace/HAL
 
