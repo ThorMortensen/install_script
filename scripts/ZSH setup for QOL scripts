@@ -15,4 +15,3 @@ echo "####### To source QOL scripts ######" >> ~/.zshrc
 echo "source ~/scripts/zshrc_stuff" >> ~/.zshrc
 echo "source \$ZSH/oh-my-zsh.sh" >> ~/.zshrc
 echo "PATH=\$PATH:~/scripts/" >> ~/.zshrc
-echo "source ~/.fonts/*.sh" >> ~/.zshrc

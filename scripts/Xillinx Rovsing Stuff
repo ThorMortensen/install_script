@@ -19,13 +19,10 @@ fi
 echo $3 | sudo -S ln -s /opt/Xilinx/14.2 /opt/Xilinx/current
 
 
-
 ## Adding flash local stuff
-echo "PATH=\$PATH:/opt/Xilinx/14.2/ISE_DS/ISE/bin/lin64/" >> ~/.bashrc
 echo "alias flashLocal='export LD_PRELOAD=/opt/Xilinx/usb-driver/libusb-driver.so && impact -batch ~/.impactLocal.cmds'" >> ~/.bashrc
 if [ -f ~/.zshrc ]; then
     echo "Using ZSH ... added to .zshrc"
-    echo "PATH=\$PATH:/opt/Xilinx/14.2/ISE_DS/ISE/bin/lin64/" >> ~/.zshrc
     echo "alias flashLocal='export LD_PRELOAD=/opt/Xilinx/usb-driver/libusb-driver.so && impact -batch ~/.impactLocal.cmds'" >> ~/.zshrc
 fi
 

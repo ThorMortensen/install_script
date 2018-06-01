@@ -1,0 +1,8 @@
+#!/bin/bash
+
+if [ "$1" == "-h" ]; then
+  echo "Installs ~> nmap net-tools openssh-server"
+  exit 0
+fi
+
+echo $3 | sudo -S apt -y install nmap net-tools openssh-server

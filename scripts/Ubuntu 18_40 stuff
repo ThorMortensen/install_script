@@ -1,0 +1,11 @@
+#!/bin/bash
+
+if [ "$1" == "-h" ]; then
+  echo "Fix the sidebar for minimize. Installs ~> gnome-tweak-tool"
+  exit 0
+fi
+
+
+
+gsettings set org.gnome.shell.extensions.dash-to-dock click-action 'minimize'
+echo $3 | sudo -S apt -y install gnome-tweak-tool

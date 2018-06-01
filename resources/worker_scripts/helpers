@@ -3,7 +3,7 @@
 #wget -nv "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb" -P ~/install_script/resources/downloads/
 
 DOWNLOAD_PATH=~/install_script/resources/downloads/
-ARCHIVE_PATH=~/install_script/resources/archive/
+ARCHIVE_PATH=~/install_script/archive/
 
 wget_forInstaller(){
   echo "Please wait downloading from " $1
