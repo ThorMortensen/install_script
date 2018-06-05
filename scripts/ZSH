@@ -15,7 +15,7 @@ fi
 
 . resources/worker_scripts/helpers
 
-#echo $3 | sudo -S apt -y install zsh curl fonts-powerline
+echo $3 | sudo -S apt -y install zsh 
 sh -c "$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
 # git clone https://github.com/bhilburn/powerlevel9k.git ~/.oh-my-zsh/custom/themes/powerlevel9k
 # git clone https://github.com/gabrielelana/awesome-terminal-fonts.git $DOWNLOAD_PATH"awesome-terminal-fonts"

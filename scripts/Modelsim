@@ -11,7 +11,7 @@ MODELSIM_NAME="ModelSimProSetup-17.1.0.240-linux.run"
 . resources/worker_scripts/helpers
 
 #### Install ModelSim
-$ARCHIVE_PATH$MODELSIM_NAME
+#$ARCHIVE_PATH$MODELSIM_NAME
 
 MODELSIM_PATH=$(dirname $(find ~/intelFPGA_pro/*/modelsim_ase/bin/ -name "vsim"))/
 

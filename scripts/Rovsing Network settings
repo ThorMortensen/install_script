@@ -6,8 +6,8 @@ if [ "$1" == "-h" ]; then
   exit 0
 fi
 
-THIS_DEVICE_NETWORK_IP="192.168.255.232"
-#THIS_DEVICE_NETWORK_IP="192.168.255.242"
+#THIS_DEVICE_NETWORK_IP="192.168.255.232"
+THIS_DEVICE_NETWORK_IP="192.168.255.242"
 
 
 ETHERNET_ADAPTER=$(ip route | grep default | sed -e "s/^.*dev.//" -e "s/.proto.*//")
